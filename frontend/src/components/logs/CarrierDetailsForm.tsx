@@ -23,13 +23,13 @@ export function CarrierDetailsForm({ value, onChange }: Props) {
       <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 [&::-webkit-details-marker]:hidden">
         <span className="flex items-center gap-2 text-sm font-medium text-ink">
           <Truck className="size-4 text-muted" aria-hidden />
-          Carrier &amp; vehicle details
-          <span className="tabular rounded-full bg-line px-2 py-0.5 text-[11px] font-medium text-ink-soft">
-            {filled}/{FIELDS.length}
+          Carrier &amp; truck details
+          <span className="text-xs font-normal text-muted">
+            {filled === FIELDS.length ? 'all filled in' : `${FIELDS.length - filled} blank`}
           </span>
         </span>
         <span className="flex items-center gap-1 text-xs text-muted">
-          <span className="hidden sm:inline">Fills every sheet</span>
+          <span className="hidden sm:inline">Edit · shown on every sheet</span>
           <ChevronDown className="size-4 transition-transform group-open:rotate-180" aria-hidden />
         </span>
       </summary>

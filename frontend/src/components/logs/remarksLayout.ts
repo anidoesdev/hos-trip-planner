@@ -1,4 +1,5 @@
 import type { LogSegment } from '../../api/types'
+import { KIND_LABEL } from '../../lib/explain'
 
 /**
  * Remarks for the paper log (guide pp.17-19): every change of duty status is marked under
@@ -26,7 +27,7 @@ export function buildRemarkStops(segments: LogSegment[]): RemarkStop[] {
     while (trimmed.length > 1 && trimmed[trimmed.length - 1].kind === 'off_duty') trimmed = trimmed.slice(0, -1)
     const first = trimmed[0]
     const last = trimmed[trimmed.length - 1]
-    const notes = [...new Set(trimmed.filter((s) => s.kind !== 'off_duty').map((s) => s.note))]
+    const notes = [...new Set(trimmed.filter((s) => s.kind !== 'off_duty').map((s) => KIND_LABEL[s.kind]))]
     if (first.kind === 'off_duty' && trimmed.length === 1) {
       // Pure padding: only worth a remark where it meets a duty change.
       const atEdge = first.start_minute > 0 ? first.start_minute : first.end_minute

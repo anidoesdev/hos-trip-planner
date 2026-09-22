@@ -11,8 +11,8 @@ export interface Preset {
 export const PRESETS: Preset[] = [
   {
     id: 'short',
-    title: 'Short haul',
-    blurb: 'Single day, under 200 mi',
+    title: 'Short haul · 1 day',
+    blurb: 'Chicago → Milwaukee → Madison',
     current: 'Chicago, IL',
     pickup: 'Milwaukee, WI',
     dropoff: 'Madison, WI',
@@ -20,8 +20,8 @@ export const PRESETS: Preset[] = [
   },
   {
     id: 'multiday',
-    title: 'Cross-country',
-    blurb: 'Chicago → Dallas → LA, multi-day',
+    title: 'Cross-country · multi-day',
+    blurb: 'Chicago → Dallas → Los Angeles',
     current: 'Chicago, IL',
     pickup: 'Dallas, TX',
     dropoff: 'Los Angeles, CA',
@@ -29,8 +29,8 @@ export const PRESETS: Preset[] = [
   },
   {
     id: 'cycle',
-    title: 'Near cycle limit',
-    blurb: '62 h used — triggers a 34-hr restart',
+    title: 'Near cycle limit · 34-hr restart',
+    blurb: 'Atlanta → Nashville → Denver',
     current: 'Atlanta, GA',
     pickup: 'Nashville, TN',
     dropoff: 'Denver, CO',

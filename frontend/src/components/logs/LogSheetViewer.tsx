@@ -48,6 +48,7 @@ export function LogSheetViewer({ plan, details, onDetailsChange }: Props) {
       <SectionHeading
         eyebrow="Record of duty status"
         title={<span id="logs-heading">Driver&apos;s daily logs</span>}
+        description="One sheet per calendar day, filled in the way a driver would by hand. The blue line traces the duty status through the day, and the four totals on the right always add up to 24."
         action={
           <div className="flex gap-2">
             <Button size="sm" icon={<Printer className="size-4" aria-hidden />} onClick={() => window.print()}>
@@ -130,8 +131,8 @@ export function LogSheetViewer({ plan, details, onDetailsChange }: Props) {
           <dl className="tabular flex flex-wrap gap-x-5 gap-y-1 text-xs">
             <Fact label="Driving" value={`${fmtHours(day.totals_hours.D)} h`} />
             <Fact label="On duty" value={`${fmtHours(day.recap.on_duty_today)} h`} />
+            <Fact label="Off / sleeper" value={`${fmtHours(day.totals_hours.OFF + day.totals_hours.SB)} h`} />
             <Fact label="Miles" value={Math.round(day.total_miles_driving_today).toLocaleString('en-US')} />
-            <Fact label="Total" value={`${fmtHours(day.total_hours)} h`} />
           </dl>
           <ComplianceBadge
             ok={ok}

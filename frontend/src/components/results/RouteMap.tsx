@@ -3,6 +3,7 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import L from 'leaflet'
 import { MapContainer, Marker, Polyline, Popup, TileLayer, useMap } from 'react-leaflet'
 import type { TripPlan } from '../../api/types'
+import { KIND_LABEL } from '../../lib/explain'
 import { fmtDayTime, fmtDuration, fmtMiles } from '../../lib/format'
 import { LEGEND_ORDER, STOP_HEX, STOP_META, type StopGroup, type StopType } from '../../lib/stops'
 
@@ -74,7 +75,7 @@ function GroupPopup({ group }: { group: StopGroup }) {
             <span className="mt-1 size-2 shrink-0 rounded-full" style={{ background: STOP_HEX[s.type] }} aria-hidden />
             <span>
               <span className="block text-xs font-medium text-ink">
-                {s.note} · {fmtDuration(s.duration_hours)}
+                {KIND_LABEL[s.kind]} · {fmtDuration(s.duration_hours)}
               </span>
               <span className="block text-[11px] text-muted">
                 {fmtDayTime(s.start)} · mile {Math.round(s.mile).toLocaleString('en-US')}

@@ -33,7 +33,7 @@ function validate(s: FormState): Errors {
   if (!s.dropoff.trim()) e.dropoff = 'Enter the drop-off location.'
   const n = Number(s.cycle)
   if (s.cycle.trim() === '' || !Number.isFinite(n)) e.cycle = 'Enter hours used, 0–70.'
-  else if (n < 0 || n > 70) e.cycle = 'Cycle used must be between 0 and 70 hours.'
+  else if (n < 0 || n > 70) e.cycle = 'Hours used must be between 0 and 70.'
   return e
 }
 
@@ -160,7 +160,7 @@ export function TripForm({ busy, onSubmit, serverErrors }: Props) {
               onChange={(e) => set('start')(e.target.value)}
               className="tabular h-11 w-full rounded-lg border border-line-strong bg-surface px-3 text-[15px] focus:border-ink/50 focus:outline-none focus:ring-2 focus:ring-accent/30"
             />
-            <p className="mt-1 text-xs text-muted">Home-terminal time. Defaults to the next 6:00 AM.</p>
+            <p className="mt-1 text-xs text-muted">Home-terminal time. Leave as is to start at the next 6:00 AM.</p>
           </div>
         </div>
 
@@ -174,7 +174,7 @@ export function TripForm({ busy, onSubmit, serverErrors }: Props) {
         <p className="mb-2.5 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">
           <Sparkles className="size-3.5 text-accent" aria-hidden /> Try an example
         </p>
-        <div className="grid gap-2">
+        <div className="grid grid-cols-1 gap-2">
           {PRESETS.map((p) => (
             <button
               key={p.id}
@@ -193,7 +193,7 @@ export function TripForm({ busy, onSubmit, serverErrors }: Props) {
                 <span className="block truncate text-xs text-muted">{p.blurb}</span>
               </span>
               <span className="tabular shrink-0 rounded-md bg-paper px-1.5 py-0.5 text-[11px] font-medium text-ink-soft group-hover:bg-surface">
-                {p.cycle} h
+                {p.cycle} h used
               </span>
             </button>
           ))}

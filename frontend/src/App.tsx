@@ -49,6 +49,31 @@ function Header({ status }: { status: ServerStatus }) {
   )
 }
 
+/** Jump links for the long results page; stays pinned while scrolling. */
+function SectionNav({ days }: { days: number }) {
+  const links = [
+    { href: '#summary', label: 'Summary' },
+    { href: '#route', label: 'Map & stops' },
+    { href: '#logs', label: `Daily logs (${days})` },
+  ]
+  return (
+    <nav
+      aria-label="Results sections"
+      className="sticky top-0 z-[1000] -mx-1 flex gap-1 overflow-x-auto rounded-xl border border-line bg-surface/90 p-1 shadow-card backdrop-blur-md"
+    >
+      {links.map((l) => (
+        <a
+          key={l.href}
+          href={l.href}
+          className="shrink-0 rounded-lg px-3 py-1.5 text-[13px] font-medium text-ink-soft transition-colors hover:bg-paper hover:text-ink"
+        >
+          {l.label}
+        </a>
+      ))}
+    </nav>
+  )
+}
+
 export default function App() {
   const [status, setStatus] = useState<ServerStatus>('checking')
   const [phase, setPhase] = useState<Phase>({ name: 'idle' })
@@ -124,8 +149,8 @@ export default function App() {
   return (
     <div className="min-h-dvh">
       <Header status={status} />
-      <main className="mx-auto grid max-w-[1440px] gap-6 px-4 py-6 sm:px-6 lg:grid-cols-[380px_minmax(0,1fr)] lg:py-8 print:hidden">
-        <aside className="lg:sticky lg:top-6 lg:self-start">
+      <main className="mx-auto grid max-w-[1440px] grid-cols-1 gap-6 px-4 py-6 sm:px-6 lg:grid-cols-[380px_minmax(0,1fr)] lg:py-8 print:hidden">
+        <aside className="min-w-0 lg:sticky lg:top-6 lg:self-start">
           <TripForm busy={busy} onSubmit={run} serverErrors={serverErrors} />
         </aside>
 
@@ -138,10 +163,18 @@ export default function App() {
 
           {plan && (
             <div className={cx('space-y-6 transition-opacity', busy && 'pointer-events-none opacity-50')}>
-              <SummaryPanel plan={plan} />
+              <SectionNav days={plan.daily_logs.length} />
 
-              <section aria-labelledby="route-heading" className="space-y-4">
-                <SectionHeading eyebrow="Route" title={<span id="route-heading">Map & itinerary</span>} />
+              <div id="summary" className="scroll-mt-16">
+                <SummaryPanel plan={plan} />
+              </div>
+
+              <section id="route" aria-labelledby="route-heading" className="scroll-mt-16 space-y-4">
+                <SectionHeading
+                  eyebrow="Route"
+                  title={<span id="route-heading">Map &amp; stops</span>}
+                  description="Every required stop in order. Click a stop to see it on the map."
+                />
                 <Card className="grid overflow-hidden xl:grid-cols-[minmax(0,1fr)_340px]">
                   <div className="h-[440px] p-2 sm:h-[460px] xl:h-[560px]">
                     <Suspense fallback={<div className="h-full w-full animate-pulse rounded-xl bg-line/60" />}>
@@ -162,7 +195,9 @@ export default function App() {
                 </Card>
               </section>
 
-              <LogSheetViewer plan={plan} details={details} onDetailsChange={setDetails} />
+              <div id="logs" className="scroll-mt-16">
+                <LogSheetViewer plan={plan} details={details} onDetailsChange={setDetails} />
+              </div>
             </div>
           )}
         </div>

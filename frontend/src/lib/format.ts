@@ -8,11 +8,13 @@ export function parseLocal(iso: string): Date {
 }
 
 const timeFmt = new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit' })
+const weekdayFmt = new Intl.DateTimeFormat('en-US', { weekday: 'short' })
 const dayFmt = new Intl.DateTimeFormat('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
 const longDayFmt = new Intl.DateTimeFormat('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })
 
 export const fmtTime = (iso: string) => timeFmt.format(parseLocal(iso))
 export const fmtDay = (iso: string) => dayFmt.format(parseLocal(iso))
+export const fmtWeekday = (iso: string) => weekdayFmt.format(parseLocal(iso))
 export const fmtLongDay = (iso: string) => longDayFmt.format(parseLocal(iso))
 export const fmtDayTime = (iso: string) => `${fmtDay(iso)} · ${fmtTime(iso)}`
 

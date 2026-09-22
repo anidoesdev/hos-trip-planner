@@ -1,13 +1,25 @@
-import { Fragment, useMemo } from 'react'
+import { useMemo } from 'react'
 import { Navigation } from 'lucide-react'
 import type { TripPlan } from '../../api/types'
-import { fmtDay, fmtDuration, fmtMiles, fmtTime } from '../../lib/format'
+import { explainKey, explainStops, KIND_LABEL } from '../../lib/explain'
+import { fmtDay, fmtDuration, fmtMiles, fmtTime, fmtWeekday } from '../../lib/format'
 import { STOP_HEX, STOP_META, stopTypeOf, type StopItem, type StopType } from '../../lib/stops'
 import { cx } from '../ui/primitives'
 
 type Row =
   | { kind: 'day'; key: string; label: string }
-  | { kind: 'stop'; key: string; stop: StopItem | null; type: StopType; title: string; place: string; start: string; hours: number; mile: number }
+  | {
+      kind: 'stop'
+      key: string
+      stop: StopItem | null
+      type: StopType
+      title: string
+      reason?: string
+      place: string
+      start: string
+      end: string
+      hours: number
+    }
   | { kind: 'drive'; key: string; miles: number; hours: number }
 
 interface Props {
@@ -17,24 +29,24 @@ interface Props {
   onSelectStop: (stopId: string | null, groupId?: string) => void
 }
 
-/** Chronological, stop-by-stop plan. Drives between stops appear as connectors. */
+/** Chronological, stop-by-stop plan. Each stop says what it is, when, where and why. */
 export function Itinerary({ plan, items, selectedStopId, onSelectStop }: Props) {
   const rows = useMemo(() => {
+    const reasons = explainStops(plan)
     const out: Row[] = []
     let lastDay = ''
     let itemIdx = 0
     const pushDay = (iso: string) => {
       const d = iso.slice(0, 10)
-      if (d !== lastDay) {
-        lastDay = d
-        const n = plan.daily_logs.findIndex((l) => l.date === d) + 1
-        out.push({ kind: 'day', key: `day-${d}`, label: `Day ${n} · ${fmtDay(d)}` })
-      }
+      if (d === lastDay) return
+      lastDay = d
+      const n = plan.daily_logs.findIndex((l) => l.date === d) + 1
+      out.push({ kind: 'day', key: `day-${d}`, label: `Day ${n} · ${fmtDay(d)}` })
     }
     pushDay(plan.summary.trip_start)
     if (!plan.events.some((e) => e.kind === 'pre_trip')) {
-      const p = plan.input.current_location
-      out.push({ kind: 'stop', key: 'start', stop: null, type: 'start', title: 'Depart', place: p.label, start: plan.summary.trip_start, hours: 0, mile: 0 })
+      const t = plan.summary.trip_start
+      out.push({ kind: 'stop', key: 'start', stop: null, type: 'start', title: 'Depart', place: plan.input.current_location.label, start: t, end: t, hours: 0 })
     }
     for (const ev of plan.events) {
       if (ev.kind === 'off_duty') continue
@@ -45,25 +57,26 @@ export function Itinerary({ plan, items, selectedStopId, onSelectStop }: Props) 
       }
       const type = stopTypeOf(ev.kind)
       if (!type) continue
-      // stops[] is the same non-driving events in the same order
+      // stops[] holds the same non-driving events in the same order
       const stop = items[itemIdx]?.start === ev.start ? items[itemIdx++] : null
       out.push({
         kind: 'stop',
         key: `s-${ev.start}-${ev.kind}`,
         stop,
         type: ev.kind === 'pre_trip' ? 'start' : type,
-        title: ev.note,
+        title: KIND_LABEL[ev.kind],
+        reason: reasons.get(explainKey(ev.start, ev.kind)),
         place: ev.location_label ?? '',
         start: ev.start,
+        end: ev.end,
         hours: ev.duration_hours,
-        mile: ev.miles_start,
       })
     }
     return out
   }, [plan, items])
 
   return (
-    <ol className="relative">
+    <ol className="relative" aria-label="Trip itinerary">
       {rows.map((row) => {
         if (row.kind === 'day')
           return (
@@ -81,44 +94,52 @@ export function Itinerary({ plan, items, selectedStopId, onSelectStop }: Props) 
               </span>
             </li>
           )
-        const meta = STOP_META[row.type]
-        const Icon = meta.icon
+        const Icon = STOP_META[row.type].icon
         const selected = !!row.stop && row.stop.id === selectedStopId
+        const spansDays = row.end.slice(0, 10) !== row.start.slice(0, 10)
         return (
-          <Fragment key={row.key}>
-            <li>
-              <button
-                type="button"
-                onClick={() => onSelectStop(row.stop?.id ?? null, row.stop ? undefined : 'start')}
-                aria-pressed={selected}
-                className={cx(
-                  'group flex w-full items-start gap-3 rounded-lg p-1.5 text-left transition-colors',
-                  selected ? 'bg-accent-soft/70' : 'hover:bg-paper',
-                )}
+          <li key={row.key}>
+            <button
+              type="button"
+              onClick={() => onSelectStop(row.stop?.id ?? null, row.stop ? undefined : 'start')}
+              aria-pressed={selected}
+              title="Show on map"
+              className={cx(
+                'group flex w-full items-start gap-3 rounded-lg p-1.5 text-left transition-colors',
+                selected ? 'bg-accent-soft/70' : 'hover:bg-paper',
+              )}
+            >
+              <span
+                className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-full ring-2 ring-white"
+                style={{ background: STOP_HEX[row.type] }}
+                aria-hidden
               >
-                <span
-                  className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-full ring-2 ring-white"
-                  style={{ background: STOP_HEX[row.type] }}
-                  aria-hidden
-                >
-                  <Icon className="size-3.5 text-white" strokeWidth={2.4} />
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className="flex items-baseline justify-between gap-2">
-                    <span className="truncate text-sm font-medium text-ink">{row.title}</span>
-                    <span className="tabular shrink-0 text-xs font-medium text-ink-soft">{fmtTime(row.start)}</span>
-                  </span>
-                  <span className="tabular flex items-baseline justify-between gap-2 text-xs text-muted">
-                    <span className="truncate">{row.place}</span>
-                    <span className="shrink-0">
-                      {row.hours > 0 ? fmtDuration(row.hours) : ''}
-                      {row.mile > 0 ? ` · mi ${Math.round(row.mile).toLocaleString('en-US')}` : ''}
-                    </span>
+                <Icon className="size-3.5 text-white" strokeWidth={2.4} />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="flex items-baseline justify-between gap-2">
+                  <span className="truncate text-sm font-medium text-ink">{row.title}</span>
+                  <span className="tabular shrink-0 text-xs font-medium text-ink-soft">
+                    {fmtTime(row.start)}
+                    {row.hours > 0 && (
+                      <span className="font-normal text-muted">
+                        {' – '}
+                        {spansDays ? `${fmtWeekday(row.end)} ` : ''}
+                        {fmtTime(row.end)}
+                      </span>
+                    )}
                   </span>
                 </span>
-              </button>
-            </li>
-          </Fragment>
+                <span className="tabular block truncate text-xs text-muted">
+                  {row.place}
+                  {row.hours > 0 && ` · ${fmtDuration(row.hours)}`}
+                </span>
+                {row.reason && (
+                  <span className="mt-0.5 block text-[11px] leading-snug text-ink-soft/80">{row.reason}</span>
+                )}
+              </span>
+            </button>
+          </li>
         )
       })}
     </ol>

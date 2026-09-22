@@ -19,10 +19,10 @@ export function CycleInput({ value, onChange, error, disabled }: Props) {
     <div>
       <div className="mb-1.5 flex items-baseline justify-between gap-2">
         <label htmlFor="cycle" className="text-[13px] font-medium text-ink-soft">
-          Current cycle used <span className="font-normal text-muted">(70 hr / 8 day)</span>
+          Hours already used <span className="font-normal text-muted">(70-hr cycle)</span>
         </label>
         <span className="tabular text-xs text-muted">
-          {valid ? `${(70 - n).toFixed(n % 1 ? 2 : 0)} h available` : '—'}
+          {valid ? `${(70 - n).toFixed(n % 1 ? 2 : 0)} h left` : '—'}
         </span>
       </div>
       <div className="flex items-center gap-3">
@@ -60,6 +60,11 @@ export function CycleInput({ value, onChange, error, disabled }: Props) {
           <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted">h</span>
         </div>
       </div>
+      {!error && (
+        <p className="mt-1 text-xs text-muted">
+          On-duty hours in the last 8 days. Use 0 for a fully rested driver.
+        </p>
+      )}
       {error && (
         <p id="cycle-error" className="mt-1 text-xs font-medium text-danger">
           {error}

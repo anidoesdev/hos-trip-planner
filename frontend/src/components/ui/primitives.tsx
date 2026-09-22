@@ -50,12 +50,18 @@ export function Card({ className, children, ...rest }: HTMLAttributes<HTMLDivEle
   )
 }
 
-export function SectionHeading({ eyebrow, title, action }: { eyebrow?: string; title: ReactNode; action?: ReactNode }) {
+export function SectionHeading({ eyebrow, title, description, action }: {
+  eyebrow?: string
+  title: ReactNode
+  description?: ReactNode
+  action?: ReactNode
+}) {
   return (
     <div className="flex flex-wrap items-end justify-between gap-3">
       <div>
         {eyebrow && <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">{eyebrow}</p>}
         <h2 className="mt-0.5 text-lg font-semibold tracking-tight text-ink">{title}</h2>
+        {description && <p className="mt-0.5 max-w-2xl text-[13px] text-muted">{description}</p>}
       </div>
       {action}
     </div>

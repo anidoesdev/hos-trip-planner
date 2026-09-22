@@ -28,7 +28,7 @@ export const STOP_META: Record<StopType, StopMeta> = {
   dropoff: { label: 'Drop-off', color: 'var(--color-stop-dropoff)', icon: Flag, priority: 8 },
   restart: { label: '34-hr restart', color: 'var(--color-stop-restart)', icon: MoonStar, priority: 6 },
   reset: { label: '10-hr rest', color: 'var(--color-stop-reset)', icon: BedDouble, priority: 5 },
-  fuel: { label: 'Fuel', color: 'var(--color-stop-fuel)', icon: Fuel, priority: 4 },
+  fuel: { label: 'Fuel stop', color: 'var(--color-stop-fuel)', icon: Fuel, priority: 4 },
   break: { label: '30-min break', color: 'var(--color-stop-break)', icon: Coffee, priority: 3 },
   inspection: { label: 'Inspection', color: 'var(--color-stop-inspection)', icon: ClipboardCheck, priority: 1 },
 }
