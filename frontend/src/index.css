@@ -1,0 +1,101 @@
+@import "tailwindcss";
+@import "@fontsource-variable/inter";
+@import "@fontsource/caveat/500.css";
+@import "@fontsource/caveat/700.css";
+@import "leaflet/dist/leaflet.css";
+
+@theme {
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-pen: "Caveat", "Segoe Print", cursive;
+
+  --color-paper: #f4f3ef;
+  --color-surface: #ffffff;
+  --color-ink: #0f172a;
+  --color-ink-soft: #334155;
+  --color-muted: #5b6879;
+  --color-line: #e3e1da;
+  --color-line-strong: #cfccc2;
+  --color-accent: #d97706;
+  --color-accent-strong: #b45309;
+  --color-accent-soft: #fef3c7;
+  --color-pen: #1e3a8a;
+  --color-ok: #047857;
+  --color-ok-soft: #d1fae5;
+  --color-danger: #b91c1c;
+  --color-danger-soft: #fee2e2;
+
+  /* stop types (map markers, itinerary, legend) */
+  --color-stop-start: #0f172a;
+  --color-stop-pickup: #059669;
+  --color-stop-dropoff: #e11d48;
+  --color-stop-fuel: #d97706;
+  --color-stop-break: #0284c7;
+  --color-stop-reset: #4f46e5;
+  --color-stop-restart: #7c3aed;
+  --color-stop-inspection: #64748b;
+
+  --shadow-card: 0 1px 2px rgb(15 23 42 / 0.04), 0 4px 16px -4px rgb(15 23 42 / 0.08);
+  --shadow-sheet: 0 1px 3px rgb(15 23 42 / 0.08), 0 12px 32px -12px rgb(15 23 42 / 0.25);
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    @apply bg-paper text-ink font-sans antialiased;
+    font-feature-settings: "cv11", "ss01";
+  }
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-accent;
+  }
+}
+
+@utility tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Leaflet: match the app's type and radius */
+.leaflet-container {
+  font-family: var(--font-sans);
+  background: #e9e7e1;
+}
+.leaflet-popup-content-wrapper {
+  border-radius: 10px;
+  box-shadow: var(--shadow-card);
+}
+.leaflet-popup-content {
+  margin: 12px 14px;
+  font-size: 13px;
+  line-height: 1.4;
+}
+.stop-marker {
+  background: transparent;
+  border: 0;
+}
+
+@keyframes indeterminate {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(250%); }
+}
+.animate-indeterminate {
+  animation: indeterminate 1.4s ease-in-out infinite;
+}
+
+@media print {
+  @page {
+    size: letter portrait;
+    margin: 0.35in;
+  }
+  body {
+    background: #fff;
+  }
+  .print-sheet {
+    break-after: page;
+    page-break-after: always;
+  }
+  .print-sheet:last-child {
+    break-after: auto;
+    page-break-after: auto;
+  }
+}

@@ -1,0 +1,33 @@
+# Render Blueprint for the Django API (free tier). Dashboard → New → Blueprint → pick this repo.
+services:
+  - type: web
+    name: hos-trip-planner-api
+    runtime: python
+    plan: free
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn config.wsgi --bind 0.0.0.0:$PORT --workers 2 --threads 4 --timeout 90
+    healthCheckPath: /api/health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.4
+      - key: DJANGO_DEBUG
+        value: "false"
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+      - key: DJANGO_ALLOWED_HOSTS
+        value: .onrender.com
+      # Your Vercel production URL, e.g. https://hos-trip-planner.vercel.app (set after the first Vercel deploy)
+      - key: CORS_ALLOWED_ORIGINS
+        sync: false
+      # Allows Vercel preview deployments of this project
+      - key: CORS_ALLOWED_ORIGIN_REGEXES
+        value: ^https://hos-trip-planner(-[a-z0-9-]+)?\.vercel\.app$
+      - key: HOME_TERMINAL_TZ
+        value: America/Chicago
+      - key: ORS_API_KEY
+        sync: false
+      - key: NOMINATIM_USER_AGENT
+        sync: false
+      - key: GEOCODE_COUNTRY_CODES
+        value: us,ca
