@@ -9,10 +9,12 @@ class TripPlanningError(Exception):
     status_code = 500
     code = "trip_planning_error"
 
-    def __init__(self, message: str, field: Optional[str] = None) -> None:
+    def __init__(self, message: str, field: Optional[str] = None, transient: bool = False) -> None:
         super().__init__(message)
         self.message = message
         self.field = field
+        # True for failures that may clear up on a retry (dropped connection, timeout, 5xx)
+        self.transient = transient
 
     def to_dict(self) -> dict:
         body = {"error": self.code, "message": self.message}

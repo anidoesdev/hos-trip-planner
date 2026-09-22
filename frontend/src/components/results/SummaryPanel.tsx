@@ -8,7 +8,7 @@ function Stat({ label, value, sub }: { label: string; value: string; sub?: strin
   return (
     <div className="min-w-0">
       <dt className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted">{label}</dt>
-      <dd className="tabular mt-1 text-2xl font-semibold tracking-tight text-ink">{value}</dd>
+      <dd className="num mt-1 text-[21px] font-bold leading-tight tracking-tight text-ink sm:text-[25px]">{value}</dd>
       {sub && <dd className="tabular mt-0.5 truncate text-xs text-muted">{sub}</dd>}
     </div>
   )
@@ -36,12 +36,12 @@ export function SummaryPanel({ plan }: { plan: TripPlan }) {
     <Card className="p-5 sm:p-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">Trip summary</p>
-          <h2 className="mt-0.5 text-lg font-semibold tracking-tight text-ink">
-            {plan.input.current_location.label} <span className="text-muted">→</span> {plan.input.pickup_location.label}{' '}
-            <span className="text-muted">→</span> {plan.input.dropoff_location.label}
+          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-accent-strong">Trip summary</p>
+          <h2 className="mt-0.5 text-xl font-semibold tracking-tight text-ink">
+            {plan.input.current_location.label} <span className="text-accent">→</span> {plan.input.pickup_location.label}{' '}
+            <span className="text-accent">→</span> {plan.input.dropoff_location.label}
           </h2>
-          <p className="mt-0.5 text-xs text-muted">
+          <p className="mt-1 text-xs text-muted">
             Leaves {fmtDayTime(s.trip_start)} · starts with {s.cycle_used_start} of 70 cycle hours used
           </p>
         </div>
@@ -62,7 +62,7 @@ export function SummaryPanel({ plan }: { plan: TripPlan }) {
         <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">Why these stops?</p>
         {reasons.length === 0 ? (
           <p className="mt-2 text-sm text-ink-soft">
-            Short enough to drive in one duty day — no rest stops required, only pickup and drop-off.
+            Short enough to drive in one duty day. No rest stops required, only pickup and drop-off.
           </p>
         ) : (
           <ul className="mt-2 grid gap-x-6 gap-y-2 sm:grid-cols-2">

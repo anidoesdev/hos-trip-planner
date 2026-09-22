@@ -4,7 +4,10 @@ import { useCallback, useState } from 'react'
 export function useLocalStorage<T>(key: string, initial: T): [T, (value: T) => void] {
   const [value, setValue] = useState<T>(() => {
     try {
-      const raw = localStorage.getItem(key)
+      const saved = localStorage.getItem(key)
+      // strip em dashes from values saved by earlier versions of the app, and save the cleaned copy
+      const raw = saved?.replace(/\u2014/g, '-') ?? null
+      if (raw !== null && raw !== saved) localStorage.setItem(key, raw)
       return raw ? { ...initial, ...JSON.parse(raw) } : initial
     } catch {
       return initial

@@ -45,10 +45,54 @@ async function runPreset(page, title) {
   return plan
 }
 
+// ---- landing dashboard -> centered form -> results ---------------------------------------------
+for (const width of [1440, 768, 375]) {
+  console.log(`\n▶ landing flow @${width}px`)
+  const { page, errors, ctx } = await newPage(width, width === 375 ? 812 : 1000)
+  await page.goto(BASE, { waitUntil: 'networkidle' })
+  await page.getByRole('heading', { name: /Plan a compliant truck trip/ }).waitFor({ timeout: 10_000 }).catch(() => fail(`landing @${width}: hero missing`))
+  if (await page.locator('#current').count()) fail(`landing @${width}: form should not show on the dashboard`)
+  await noHorizontalScroll(page, `landing @${width}`)
+  if (width === 1440) await page.screenshot({ path: shot('landing-1440.png'), fullPage: true })
+
+  // the centre button opens the form on its own
+  await page.getByRole('button', { name: /^Plan a trip/ }).click()
+  await page.locator('#current').waitFor({ timeout: 5_000 }).catch(() => fail(`landing @${width}: Plan a trip did not open the form`))
+  if (!page.url().endsWith('#plan')) fail(`landing @${width}: url is ${page.url()}, expected #plan`)
+  const box = await page.locator('aside').boundingBox()
+  const centred = box && Math.abs(box.x + box.width / 2 - width / 2) < 24
+  if (!centred) fail(`landing @${width}: form is not centred (x=${box?.x}, w=${box?.width})`)
+  await noHorizontalScroll(page, `centred form @${width}`)
+
+  // browser Back returns to the dashboard
+  await page.goBack()
+  await page.getByRole('heading', { name: /Plan a compliant truck trip/ }).waitFor({ timeout: 5_000 }).catch(() => fail(`landing @${width}: Back did not return to the dashboard`))
+
+  if (width === 1440) {
+    // typed values survive the move from the centred form to the results sidebar
+    await page.getByRole('button', { name: /^Plan a trip/ }).click()
+    await page.fill('#current', 'Chicago, IL')
+    await page.fill('#pickup', 'Milwaukee, WI')
+    await page.fill('#dropoff', 'Madison, WI')
+    await page.getByRole('button', { name: 'Plan trip & generate logs' }).click()
+    await page.getByText('Trip summary').waitFor({ timeout: 120_000 })
+    const kept = await page.locator('#dropoff').inputValue()
+    if (kept !== 'Madison, WI') fail(`form lost its values moving to results (dropoff="${kept}")`)
+    if (!page.url().endsWith('#results')) fail(`results url is ${page.url()}`)
+    // "See an example" from the dashboard runs the cross-country preset
+    await page.getByRole('link', { name: /HOS Trip Planner/ }).click()
+    await page.getByRole('button', { name: 'See an example' }).click()
+    await page.getByText('Chicago, IL → Dallas, TX → Los Angeles, CA').waitFor({ timeout: 120_000 }).catch(() => fail('See an example did not plan the cross-country trip'))
+    console.log('  dashboard → form → results → dashboard → example: ok')
+  }
+  if (errors.length) fail(`console errors on landing @${width}: ${errors.join(' | ')}`)
+  await ctx.close()
+}
+
 // ---- desktop: every preset -------------------------------------------------------------
 {
   const { page, errors, ctx } = await newPage(1440, 1000)
-  await page.goto(BASE, { waitUntil: 'networkidle' })
+  await page.goto(`${BASE}/#plan`, { waitUntil: 'networkidle' })
   await page.screenshot({ path: shot('empty-1440.png') })
 
   for (const title of PRESETS) {
@@ -93,9 +137,30 @@ async function runPreset(page, title) {
       }
     }
 
+    // playback: scrub to mid-trip → truck on the map, gauges running, cursor on the matching sheet
+    const slider = page.getByRole('slider', { name: 'Trip time' })
+    const mid = await slider.evaluate((el) => {
+      const v = String(Math.round((Number(el.min) + Number(el.max)) / 2 / 300000) * 300000)
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set.call(el, v)
+      el.dispatchEvent(new Event('input', { bubbles: true }))
+      return Number(v)
+    })
+    await page.waitForTimeout(300)
+    if (!(await page.locator('.leaflet-marker-icon[title="Truck position"]').count())) fail(`${title}: no truck marker after scrubbing`)
+    if (!(await page.locator('[data-testid="log-cursor"]').count())) fail(`${title}: no log cursor after scrubbing`)
+    const midDate = new Date(mid)
+    const midIso = `${midDate.getFullYear()}-${String(midDate.getMonth() + 1).padStart(2, '0')}-${String(midDate.getDate()).padStart(2, '0')}`
+    const shownDay = await page.getByRole('tab', { selected: true }).textContent()
+    const wantDay = plan.daily_logs.findIndex((d) => d.date === midIso) + 1
+    if (!shownDay.includes(`Day ${wantDay}`)) fail(`${title}: scrub to ${midIso} shows "${shownDay}", expected Day ${wantDay}`)
+    // the pen animation must finish with the full line drawn
+    await page.waitForTimeout(2600)
+    const offset = await page.locator('#log-sheet-panel [data-testid="duty-line"]').evaluate((el) => getComputedStyle(el).strokeDashoffset)
+    if (!['0', '0px'].includes(offset)) fail(`${title}: duty line not fully drawn (dashoffset ${offset})`)
+
     // clicking an itinerary stop opens its popup on the map
-    const mid = page.locator('ol button[aria-pressed]').nth(Math.min(2, itinStops - 1))
-    await mid.click()
+    const stopRow = page.locator('ol button[aria-pressed]').nth(Math.min(2, itinStops - 1))
+    await stopRow.click()
     await page.locator('.leaflet-popup-content').waitFor({ timeout: 5_000 }).catch(() => fail(`${title}: itinerary click did not open popup`))
 
     const slug = title.toLowerCase().replace(/\s+/g, '-')
@@ -121,7 +186,7 @@ async function runPreset(page, title) {
 for (const width of [768, 375]) {
   console.log(`\n▶ layout @${width}px`)
   const { page, errors, ctx } = await newPage(width, width === 375 ? 812 : 1024)
-  await page.goto(BASE, { waitUntil: 'networkidle' })
+  await page.goto(`${BASE}/#plan`, { waitUntil: 'networkidle' })
   await noHorizontalScroll(page, `empty @${width}`)
   await page.screenshot({ path: shot(`empty-${width}.png`), fullPage: true })
   await runPreset(page, 'Cross-country')
@@ -136,7 +201,7 @@ for (const width of [768, 375]) {
 {
   console.log('\n▶ validation & errors')
   const { page, ctx } = await newPage(1440)
-  await page.goto(BASE, { waitUntil: 'networkidle' })
+  await page.goto(`${BASE}/#plan`, { waitUntil: 'networkidle' })
   await page.getByRole('button', { name: 'Plan trip & generate logs' }).click()
   const inline = await page.getByText('Enter where the truck is now.').isVisible()
   if (!inline) fail('empty submit shows no inline error')
@@ -148,6 +213,16 @@ for (const width of [768, 375]) {
   const fieldErr = await page.locator('#pickup-error').isVisible().catch(() => false)
   if (!fieldErr) fail('location_not_found not attached to pickup field')
   await page.screenshot({ path: shot('error-state.png') })
+
+  // theme toggle flips the theme and survives a reload
+  const before = await page.evaluate(() => document.documentElement.dataset.theme)
+  await page.getByRole('button', { name: /Switch to (day|Night Haul) theme/ }).click()
+  const after = await page.evaluate(() => document.documentElement.dataset.theme)
+  if (before === after) fail(`theme toggle did nothing (${before})`)
+  await page.reload({ waitUntil: 'networkidle' })
+  const persisted = await page.evaluate(() => document.documentElement.dataset.theme)
+  if (persisted !== after) fail(`theme not persisted (${after} → ${persisted})`)
+  console.log(`  theme: ${before} → ${after}, persisted after reload`)
   await ctx.close()
 }
 

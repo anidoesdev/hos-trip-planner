@@ -15,9 +15,46 @@ The schedule follows FMCSA Hours of Service for a property-carrying driver (49 C
 **Live app:** `https://<your-app>.vercel.app` · **API:** `https://<your-api>.onrender.com/api/health`
 <sub>(Fill these in after following [docs/DEPLOY.md](docs/DEPLOY.md).)</sub>
 
+![Landing dashboard: what the planner does, with an animated preview](docs/screenshots/landing.png)
+
 | Desktop | Daily log sheet | Mobile |
 |---|---|---|
 | ![Desktop results](docs/screenshots/app-desktop.png) | ![Daily log sheet](docs/screenshots/log-sheet.png) | ![Mobile](docs/screenshots/mobile-results.png) |
+
+## Highlights
+
+- **A three-screen flow.** The app opens on a dashboard that explains what it does and how, with
+  an animated preview (a route drawing itself, gauges filling, a log line being traced). The
+  **Plan a trip** button brings the trip form to the center of the screen on its own. After
+  planning, the results appear with the form alongside for quick changes. Each screen has its
+  own URL (`#plan`, `#results`), so the browser's Back button works, and the logo returns to the
+  dashboard. **See an example** runs the cross-country trip in one click.
+- **Trip playback with live HOS clocks.** Drag the scrubber, or press play, to move a truck along
+  the route. Four gauges fill against the limits: 11-hr driving, 14-hr duty window, 8 hours until
+  a break, and the 70-hr cycle. They turn amber near a limit and red at it, and a green bar shows
+  each rest counting down until the clocks reset. A cursor follows along on that day's log sheet.
+  The scrubber track doubles as a status strip for the whole trip, colored by duty status
+  (driving, on duty, sleeper berth, off duty).
+- **Log sheets that draw themselves.** The duty line is traced like a pen stroke, then the totals,
+  the "=24" and the remarks are written in one by one. Print and PDF copies are always fully drawn.
+- **"Why these stops?"** Each rest, break and fuel stop is shown with the rule that required it,
+  e.g. "11-hr driving limit reached".
+- **Night Haul theme, with a Day toggle.** The default look is a truck cab at night, in the
+  Color Hunt palette `#222831 · #31363F · #76ABAE · #EEEEEE`: charcoal and slate panels, glowing
+  teal HOS gauges and buttons, and a dark navigation-style map. The Day theme uses
+  `#A0937D · #E7D4B5 · #F6E6CB · #B6C7AA` on a soft ivory page: beige lines, deep sage buttons, taupe details. Miles,
+  hours and times use JetBrains Mono, like an instrument readout. The **Day / Night** button in
+  the header switches to a light theme and remembers the choice. Log sheets are always white
+  paper, and printing is always light.
+- **A calm map.** OpenStreetMap tiles are desaturated so the route and stops stand out, and a
+  dash flows along the loaded leg to show the direction of travel.
+- All animations switch off for users who prefer reduced motion.
+
+![Trip playback: clocks at their limits during a 10-hr rest](docs/screenshots/playback.png)
+
+| Night Haul (default) | Day |
+|---|---|
+| ![Night Haul theme](docs/screenshots/app-desktop.png) | ![Day theme](docs/screenshots/app-desktop-day.png) |
 
 ## Try it
 
@@ -173,6 +210,7 @@ cd backend && pytest                       # 612 tests: engine scenarios, 576 pr
 cd frontend && npm run build               # type-check + production build
 cd frontend && node scripts/qa.mjs         # E2E in Chrome: all presets, 1440/768/375 px, PDF, errors
 cd frontend && node scripts/a11y.mjs       # axe-core WCAG A/AA scan of the results screen
+cd frontend && node scripts/a11y-form.mjs  # the same scan on the location dropdown and date picker, both themes
 ```
 
 The backend tests check that every plan:

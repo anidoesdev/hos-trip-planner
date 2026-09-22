@@ -1,12 +1,13 @@
 import { useEffect, useState, type FormEvent } from 'react'
-import { ArrowRight, CalendarClock, Sparkles } from 'lucide-react'
+import { ArrowRight, Sparkles } from 'lucide-react'
 import type { TripRequest } from '../../api/types'
 import { defaultStartLocal } from '../../lib/format'
 import { PRESETS, type Preset } from '../../lib/presets'
-import { STOP_HEX } from '../../lib/stops'
+import { STOP_HEX, STOP_ON } from '../../lib/stops'
 import { Button, Card, cx } from '../ui/primitives'
 import { CycleInput } from './CycleInput'
-import { LocationInput } from './LocationInput'
+import { DateTimePicker } from './DateTimePicker'
+import { LocationInput, type PickedPlace } from './LocationInput'
 
 interface FormState {
   current: string
@@ -52,9 +53,11 @@ interface Props {
   onSubmit: (req: TripRequest) => void
   /** Field errors returned by the API (location not found, validation). */
   serverErrors?: Record<string, string>
+  /** Run a preset as if its button were clicked (a new nonce re-runs it). */
+  requestPreset?: { id: string; nonce: number } | null
 }
 
-export function TripForm({ busy, onSubmit, serverErrors }: Props) {
+export function TripForm({ busy, onSubmit, serverErrors, requestPreset = null }: Props) {
   const [state, setState] = useState<FormState>({
     current: '',
     pickup: '',
@@ -64,6 +67,8 @@ export function TripForm({ busy, onSubmit, serverErrors }: Props) {
   })
   const [errors, setErrors] = useState<Errors>({})
   const [activePreset, setActivePreset] = useState<string | null>(null)
+  // coordinates of places picked from suggestions: the next field measures distance from them
+  const [picked, setPicked] = useState<{ current: PickedPlace | null; pickup: PickedPlace | null }>({ current: null, pickup: null })
 
   useEffect(() => {
     if (!serverErrors) return
@@ -95,15 +100,23 @@ export function TripForm({ busy, onSubmit, serverErrors }: Props) {
   const runPreset = (p: Preset) => {
     const next = { ...state, current: p.current, pickup: p.pickup, dropoff: p.dropoff, cycle: String(p.cycle) }
     setState(next)
+    setPicked({ current: null, pickup: null })
     setActivePreset(p.id)
     submit(next)
   }
+
+  const presetNonce = requestPreset?.nonce
+  useEffect(() => {
+    const p = PRESETS.find((x) => x.id === requestPreset?.id)
+    if (p) runPreset(p)
+  }, [presetNonce]) // only when a new request arrives
 
   return (
     <Card className="p-5 sm:p-6">
       <form onSubmit={onFormSubmit} noValidate>
         <div className="mb-5">
-          <h2 className="text-lg font-semibold tracking-tight">Plan a trip</h2>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-accent-strong">Dispatch</p>
+          <h2 className="mt-0.5 text-lg font-semibold tracking-tight">Plan a trip</h2>
           <p className="mt-0.5 text-[13px] text-muted">Route, HOS-compliant stops and daily log sheets.</p>
         </div>
 
@@ -118,8 +131,11 @@ export function TripForm({ busy, onSubmit, serverErrors }: Props) {
             placeholder="e.g. Chicago, IL"
             value={state.current}
             onChange={set('current')}
+            onPick={(p) => setPicked((x) => ({ ...x, current: p }))}
+            allowGeolocate
             error={errors.current}
             markerColor={STOP_HEX.start}
+            markerIconColor={STOP_ON.start}
             disabled={busy}
           />
           <LocationInput
@@ -128,6 +144,8 @@ export function TripForm({ busy, onSubmit, serverErrors }: Props) {
             placeholder="e.g. Dallas, TX"
             value={state.pickup}
             onChange={set('pickup')}
+            onPick={(p) => setPicked((x) => ({ ...x, pickup: p }))}
+            reference={picked.current}
             error={errors.pickup}
             markerColor={STOP_HEX.pickup}
             disabled={busy}
@@ -138,6 +156,7 @@ export function TripForm({ busy, onSubmit, serverErrors }: Props) {
             placeholder="e.g. Los Angeles, CA"
             value={state.dropoff}
             onChange={set('dropoff')}
+            reference={picked.pickup ?? picked.current}
             error={errors.dropoff}
             markerColor={STOP_HEX.dropoff}
             disabled={busy}
@@ -147,21 +166,7 @@ export function TripForm({ busy, onSubmit, serverErrors }: Props) {
         <div className="mt-5 space-y-5 border-t border-line pt-5">
           <CycleInput value={state.cycle} onChange={set('cycle')} error={errors.cycle} disabled={busy} />
 
-          <div>
-            <label htmlFor="start" className="mb-1.5 flex items-center gap-1.5 text-[13px] font-medium text-ink-soft">
-              <CalendarClock className="size-3.5" aria-hidden /> Start date &amp; time
-              <span className="font-normal text-muted">(optional)</span>
-            </label>
-            <input
-              id="start"
-              type="datetime-local"
-              value={state.start}
-              disabled={busy}
-              onChange={(e) => set('start')(e.target.value)}
-              className="tabular h-11 w-full rounded-lg border border-line-strong bg-surface px-3 text-[15px] focus:border-ink/50 focus:outline-none focus:ring-2 focus:ring-accent/30"
-            />
-            <p className="mt-1 text-xs text-muted">Home-terminal time. Leave as is to start at the next 6:00 AM.</p>
-          </div>
+          <DateTimePicker id="start" value={state.start} onChange={set('start')} disabled={busy} />
         </div>
 
         <Button type="submit" variant="primary" size="lg" loading={busy} className="mt-6 w-full">
@@ -184,7 +189,7 @@ export function TripForm({ busy, onSubmit, serverErrors }: Props) {
               className={cx(
                 'group flex items-center justify-between gap-3 rounded-lg border px-3 py-2.5 text-left transition-colors disabled:opacity-50',
                 activePreset === p.id
-                  ? 'border-accent bg-accent-soft/60'
+                  ? 'border-accent bg-accent-soft'
                   : 'border-line hover:border-line-strong hover:bg-paper',
               )}
             >

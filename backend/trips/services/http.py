@@ -58,11 +58,13 @@ def request_json(method: str, url: str, *, service: str, params: Optional[dict] 
         resp = _session.request(method, url, params=params, json=json, headers=_headers(headers),
                                 timeout=timeout or settings.HTTP_TIMEOUT_SECONDS)
     except requests.Timeout as exc:
-        raise UpstreamTimeout(f"{service} did not respond in time") from exc
+        raise UpstreamTimeout(f"{service} did not respond in time", transient=True) from exc
     except requests.RequestException as exc:
-        raise UpstreamUnavailable(f"{service} is unreachable: {exc.__class__.__name__}") from exc
+        raise UpstreamUnavailable(f"{service} is unreachable: {exc.__class__.__name__}", transient=True) from exc
     if resp.status_code >= 400 and resp.status_code not in allow_status:
-        raise UpstreamUnavailable(f"{service} returned HTTP {resp.status_code}")
+        # 5xx and 429 may pass; 4xx such as a rejected API key (401/403) will not
+        transient = resp.status_code >= 500 or resp.status_code == 429
+        raise UpstreamUnavailable(f"{service} returned HTTP {resp.status_code}", transient=transient)
     try:
         return resp.json()
     except ValueError as exc:

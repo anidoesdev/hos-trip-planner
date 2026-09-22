@@ -7,7 +7,7 @@ const FIELDS: { key: keyof CarrierDetails; label: string; placeholder: string }[
   { key: 'homeTerminal', label: 'Home terminal address', placeholder: 'City, ST' },
   { key: 'truck', label: 'Truck / trailer numbers', placeholder: 'Tractor 1042 / Trailer 5580 (IL)' },
   { key: 'manifest', label: 'DVL / manifest no.', placeholder: 'BOL-000142' },
-  { key: 'shipper', label: 'Shipper & commodity', placeholder: 'Shipper — general freight' },
+  { key: 'shipper', label: 'Shipper & commodity', placeholder: 'Shipper (general freight)' },
 ]
 
 interface Props {

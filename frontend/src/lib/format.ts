@@ -1,7 +1,7 @@
 /**
  * The API returns naive ISO datetimes in home-terminal time (§395.8). Parsing them without
  * a zone makes JS treat them as local wall-clock, and formatting without a zone prints the
- * same wall-clock back — so no time-zone conversion ever happens in the UI.
+ * same wall-clock back, so no time-zone conversion ever happens in the UI.
  */
 export function parseLocal(iso: string): Date {
   return new Date(iso.length === 10 ? `${iso}T00:00:00` : iso)

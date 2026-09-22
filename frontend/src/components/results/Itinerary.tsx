@@ -3,8 +3,8 @@ import { Navigation } from 'lucide-react'
 import type { TripPlan } from '../../api/types'
 import { explainKey, explainStops, KIND_LABEL } from '../../lib/explain'
 import { fmtDay, fmtDuration, fmtMiles, fmtTime, fmtWeekday } from '../../lib/format'
-import { STOP_HEX, STOP_META, stopTypeOf, type StopItem, type StopType } from '../../lib/stops'
-import { cx } from '../ui/primitives'
+import { STOP_HEX, STOP_META, STOP_ON, stopTypeOf, type StopItem, type StopType } from '../../lib/stops'
+import { MileTag, cx } from '../ui/primitives'
 
 type Row =
   | { kind: 'day'; key: string; label: string }
@@ -19,6 +19,8 @@ type Row =
       start: string
       end: string
       hours: number
+      mile: number
+      n: number
     }
   | { kind: 'drive'; key: string; miles: number; hours: number }
 
@@ -36,6 +38,7 @@ export function Itinerary({ plan, items, selectedStopId, onSelectStop }: Props) 
     const out: Row[] = []
     let lastDay = ''
     let itemIdx = 0
+    let n = 0
     const pushDay = (iso: string) => {
       const d = iso.slice(0, 10)
       if (d === lastDay) return
@@ -46,7 +49,7 @@ export function Itinerary({ plan, items, selectedStopId, onSelectStop }: Props) 
     pushDay(plan.summary.trip_start)
     if (!plan.events.some((e) => e.kind === 'pre_trip')) {
       const t = plan.summary.trip_start
-      out.push({ kind: 'stop', key: 'start', stop: null, type: 'start', title: 'Depart', place: plan.input.current_location.label, start: t, end: t, hours: 0 })
+      out.push({ kind: 'stop', key: 'start', stop: null, type: 'start', title: 'Depart', place: plan.input.current_location.label, start: t, end: t, hours: 0, mile: 0, n: ++n })
     }
     for (const ev of plan.events) {
       if (ev.kind === 'off_duty') continue
@@ -70,6 +73,8 @@ export function Itinerary({ plan, items, selectedStopId, onSelectStop }: Props) 
         start: ev.start,
         end: ev.end,
         hours: ev.duration_hours,
+        mile: ev.miles_start,
+        n: ++n,
       })
     }
     return out
@@ -86,7 +91,7 @@ export function Itinerary({ plan, items, selectedStopId, onSelectStop }: Props) 
           )
         if (row.kind === 'drive')
           return (
-            <li key={row.key} className="flex items-center gap-3 py-0.5 pl-[13px]">
+            <li key={row.key} className="flex items-center gap-3 py-0.5 pl-[14px]">
               <span className="h-7 border-l-2 border-dashed border-line-strong" aria-hidden />
               <span className="tabular flex items-center gap-1.5 text-xs text-muted">
                 <Navigation className="size-3 rotate-90" aria-hidden />
@@ -110,29 +115,31 @@ export function Itinerary({ plan, items, selectedStopId, onSelectStop }: Props) 
               )}
             >
               <span
-                className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-full ring-2 ring-white"
+                className="relative mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-full ring-2 ring-surface"
                 style={{ background: STOP_HEX[row.type] }}
                 aria-hidden
               >
-                <Icon className="size-3.5 text-white" strokeWidth={2.4} />
+                <Icon className="size-3.5" style={{ color: STOP_ON[row.type] }} strokeWidth={2.4} />
+                <span className="num absolute -bottom-1 -right-1.5 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-surface px-0.5 text-[9px] font-bold text-ink ring-1 ring-line-strong">
+                  {row.n}
+                </span>
               </span>
               <span className="min-w-0 flex-1">
-                <span className="flex items-baseline justify-between gap-2">
-                  <span className="truncate text-sm font-medium text-ink">{row.title}</span>
-                  <span className="tabular shrink-0 text-xs font-medium text-ink-soft">
-                    {fmtTime(row.start)}
-                    {row.hours > 0 && (
-                      <span className="font-normal text-muted">
-                        {' – '}
-                        {spansDays ? `${fmtWeekday(row.end)} ` : ''}
-                        {fmtTime(row.end)}
-                      </span>
-                    )}
-                  </span>
+                <span className="block truncate text-sm font-semibold leading-tight text-ink">{row.title}</span>
+                <span className="num mt-0.5 block text-[11.5px] text-ink-soft">
+                  {fmtTime(row.start)}
+                  {row.hours > 0 && (
+                    <>
+                      {' – '}
+                      {spansDays ? `${fmtWeekday(row.end)} ` : ''}
+                      {fmtTime(row.end)}
+                      <span className="font-normal text-muted"> · {fmtDuration(row.hours)}</span>
+                    </>
+                  )}
                 </span>
-                <span className="tabular block truncate text-xs text-muted">
-                  {row.place}
-                  {row.hours > 0 && ` · ${fmtDuration(row.hours)}`}
+                <span className="mt-0.5 flex items-center justify-between gap-2 text-xs text-muted">
+                  <span className="truncate">{row.place}</span>
+                  {row.mile > 0 && <MileTag mile={row.mile} className="shrink-0" />}
                 </span>
                 {row.reason && (
                   <span className="mt-0.5 block text-[11px] leading-snug text-ink-soft/80">{row.reason}</span>

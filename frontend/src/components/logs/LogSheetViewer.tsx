@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { ChevronLeft, ChevronRight, Download, Printer } from 'lucide-react'
 import type { TripPlan } from '../../api/types'
@@ -11,6 +11,8 @@ interface Props {
   plan: TripPlan
   details: CarrierDetails
   onDetailsChange: (d: CarrierDetails) => void
+  /** Playback position: the sheet follows it and shows a time cursor. */
+  cursor?: { dayIndex: number; minute: number } | null
 }
 
 /** Recap column C: on-duty hours over the last 5 log days of this trip, including today. */
@@ -19,13 +21,17 @@ function last5Totals(plan: TripPlan): number[] {
   return onDuty.map((_, i) => onDuty.slice(Math.max(0, i - 4), i + 1).reduce((a, b) => a + b, 0))
 }
 
-export function LogSheetViewer({ plan, details, onDetailsChange }: Props) {
+export function LogSheetViewer({ plan, details, onDetailsChange, cursor = null }: Props) {
   const logs = plan.daily_logs
   const [index, setIndex] = useState(0)
   const [exporting, setExporting] = useState(false)
   const [exportError, setExportError] = useState<string | null>(null)
   const printRef = useRef<HTMLDivElement>(null)
   const last5 = useMemo(() => last5Totals(plan), [plan])
+  const cursorDay = cursor?.dayIndex
+  useEffect(() => {
+    if (cursorDay !== undefined) setIndex(cursorDay)
+  }, [cursorDay])
   const day = logs[Math.min(index, logs.length - 1)]
   const ok = day.compliance?.ok ?? plan.compliance.ok
 
@@ -94,12 +100,12 @@ export function LogSheetViewer({ plan, details, onDetailsChange }: Props) {
                   onClick={() => setIndex(i)}
                   className={cx(
                     'flex shrink-0 items-center gap-2 rounded-lg px-3 py-1.5 text-left transition-colors',
-                    i === index ? 'bg-ink text-white' : 'text-ink-soft hover:bg-paper',
+                    i === index ? 'glow bg-primary text-on-primary' : 'text-ink-soft hover:bg-paper',
                   )}
                 >
                   <span className={cx('size-1.5 rounded-full', dayOk ? 'bg-emerald-500' : 'bg-red-500')} aria-hidden />
-                  <span className="text-[13px] font-medium">Day {d.day_number}</span>
-                  <span className={cx('hidden text-xs sm:inline', i === index ? 'text-white/70' : 'text-muted')}>
+                  <span className="text-[13px] font-semibold">Day {d.day_number}</span>
+                  <span className={cx('hidden text-xs sm:inline', i === index ? 'text-on-primary' : 'text-muted')}>
                     {fmtDay(d.date)}
                   </span>
                 </button>
@@ -144,16 +150,24 @@ export function LogSheetViewer({ plan, details, onDetailsChange }: Props) {
           />
         </div>
 
-        <div id="log-sheet-panel" role="tabpanel" className="overflow-x-auto bg-[#e9e7e1] p-3 sm:p-6">
+        <div id="log-sheet-panel" role="tabpanel" className="overflow-x-auto bg-desk p-3 sm:p-6">
           <div className="mx-auto min-w-[640px] max-w-[980px] shadow-sheet">
-            <DailyLogSheet log={day} details={details} last5Hours={last5[index]} className="block h-auto w-full" />
+            <DailyLogSheet
+              key={day.date}
+              log={day}
+              details={details}
+              last5Hours={last5[index]}
+              animate
+              cursorMinute={cursor && cursor.dayIndex === index ? cursor.minute : null}
+              className="block h-auto w-full"
+            />
           </div>
         </div>
         {!ok && day.compliance && (
           <ul className="border-t border-line bg-danger-soft/40 px-4 py-3 text-sm text-danger">
             {day.compliance.violations.map((v, i) => (
               <li key={i}>
-                {v.cfr} — {v.message}
+                {v.cfr}: {v.message}
               </li>
             ))}
           </ul>

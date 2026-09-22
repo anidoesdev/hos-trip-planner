@@ -38,7 +38,7 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
-# W003: stateless JSON API — no cookies, sessions or auth, so there is nothing for CSRF to protect.
+# W003: stateless JSON API with no cookies, sessions or auth, so there is nothing for CSRF to protect.
 # W005/W021: HSTS includeSubDomains/preload are for domains you own; the API runs on a
 # subdomain of a shared host (onrender.com), where those directives are inappropriate.
 SILENCED_SYSTEM_CHECKS = ["security.W003", "security.W005", "security.W021"]

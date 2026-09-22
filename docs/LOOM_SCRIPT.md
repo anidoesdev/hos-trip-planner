@@ -1,4 +1,4 @@
-# Loom script (≈4:30)
+# Loom script (≈4:40)
 
 **Setup before recording**
 
@@ -11,6 +11,8 @@
 
 ### 0:00–0:20 · Intro
 
+Start on the landing dashboard and let the preview animation play once.
+
 > "This is an HOS trip planner for a property-carrying truck driver. You enter where the truck is,
 > the pickup, the drop-off and how many hours of the 70-hour cycle are already used. It returns a
 > compliant route with every required stop, plus a filled-in Driver's Daily Log for each day. It's
@@ -19,8 +21,9 @@
 
 ### 0:20–1:30 · Demo: multi-day trip
 
-1. Point at the form: the autocomplete, the cycle slider with its hours-available readout, and
-   the optional start time.
+1. Click **Plan a trip**: the form comes to the center of the screen. Point at the autocomplete
+   (type a city: each suggestion shows its type and distance from the previous stop), the cycle
+   slider with its hours-left readout, and the date and time picker.
    > "Everything is in home-terminal time, as the rule requires."
 2. Click **Try an example → Cross-country** (Chicago → Dallas → LA, 20 h used). The progress
    steps appear.
@@ -34,9 +37,24 @@
    > "Notice it fuels at the pickup instead of stopping again 30 miles later: once the tank is
    > about three-quarters used, it fuels at a stop the driver is making anyway."
 
-### 1:30–2:40 · One log sheet, checked against the FMCSA rules
+### 1:30–2:00 · Trip playback (the centerpiece)
 
-1. Scroll to **Driver's daily logs** and open **Day 1**. Put the guide's p.18 side by side.
+1. Press **Play** on the Trip playback card, and pause about 7 hours into Day 1.
+   > "This replays the trip with the same clocks the engine uses. The truck moves along the route,
+   > and the four gauges fill against the limits. Driving is at 7 of 11 hours, and the 8-hour
+   > break clock is almost full."
+2. Drag slightly forward: the 30-minute break appears, and the "until break" gauge drops back to
+   zero.
+3. Drag to the evening:
+   > "Driving hits 11.00 and turns red, 'limit reached'. Now a 10-hour rest starts, and this green
+   > bar counts it down. When it fills, the 11- and 14-hour clocks reset."
+4. Point at the log sheet below:
+   > "The cursor on the log follows the playback, so you can check any moment on the paper
+   > log against the clocks."
+
+### 2:00–2:50 · One log sheet, checked against the FMCSA rules
+
+1. Scroll to **Driver's daily logs** and open **Day 1**; the duty line draws itself like a pen. Put the guide's p.18 side by side.
    > "This SVG copies the blank paper log: the header, the black hour band, the four rows with
    > 15-minute ticks, and the totals column."
 2. Trace the duty line:
@@ -57,7 +75,7 @@
    > "A full day off, and the recap resets to 70 hours available."
 7. Click **Download PDF** (one Letter page per day) and show **Print** briefly.
 
-### 2:40–3:55 · Code tour
+### 2:50–4:00 · Code tour
 
 1. `backend/hos/engine.py`. This is pure Python with no Django, so it's easy to test.
    - Show `drive_allowance()`:
@@ -85,7 +103,11 @@
    Then `remarksLayout.ts`:
    > "This groups stops and spreads out the labels."
 
-### 3:55–4:30 · Design decisions and trade-offs
+### 4:00–4:40 · Design decisions and trade-offs
+
+- **Night Haul theme:** a truck-cab-at-night dashboard in charcoal, slate and teal, with glowing gauges and a dark map.
+  The Day theme is ivory with beige, taupe and deep sage.
+  Click **Day** in the header to show the light theme; both come from one set of color tokens.
 
 - **Whole-minute simulation** instead of floating-point hours, so every day totals exactly 24
   and each drive stops exactly at its limit.

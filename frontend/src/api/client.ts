@@ -68,7 +68,7 @@ export async function ensureAwake(onWaking: (elapsedMs: number) => void, signal?
   }
   throw new ApiError(
     'server_unreachable',
-    'The planning server did not respond. It may be starting up — please try again in a moment.',
+    'The planning server did not respond. It may be starting up. Please try again in a moment.',
   )
 }
 
@@ -87,7 +87,7 @@ export async function planTrip(req: TripRequest, signal?: AbortSignal): Promise<
     throw new ApiError(
       timedOut ? 'timeout' : 'network',
       timedOut
-        ? 'Planning took too long. The map services may be slow — please retry.'
+        ? 'Planning took too long. The map services may be slow. Please retry.'
         : 'Could not reach the planning server. Check your connection and retry.',
     )
   }

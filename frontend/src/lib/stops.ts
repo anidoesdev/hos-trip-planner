@@ -33,9 +33,12 @@ export const STOP_META: Record<StopType, StopMeta> = {
   inspection: { label: 'Inspection', color: 'var(--color-stop-inspection)', icon: ClipboardCheck, priority: 1 },
 }
 
-/** Raw hex colors for places CSS variables can't reach (Leaflet divIcon HTML is fine, jsPDF is not). */
+/**
+ * Badge colors, used in inline styles (HTML, where CSS variables work, including Leaflet
+ * divIcons). Start follows the theme: dark ink by day, a light badge at night.
+ */
 export const STOP_HEX: Record<StopType, string> = {
-  start: '#0f172a',
+  start: 'var(--color-stop-start)',
   pickup: '#059669',
   dropoff: '#e11d48',
   fuel: '#d97706',
@@ -43,6 +46,18 @@ export const STOP_HEX: Record<StopType, string> = {
   reset: '#4f46e5',
   restart: '#7c3aed',
   inspection: '#64748b',
+}
+
+/** Icon color on each badge: white, except Start at night (light badge, dark icon). */
+export const STOP_ON: Record<StopType, string> = {
+  start: 'var(--color-on-stop-start)',
+  pickup: '#fff',
+  dropoff: '#fff',
+  fuel: '#fff',
+  break: '#fff',
+  reset: '#fff',
+  restart: '#fff',
+  inspection: '#fff',
 }
 
 export const LEGEND_ORDER: StopType[] = ['start', 'pickup', 'dropoff', 'fuel', 'break', 'reset', 'restart']

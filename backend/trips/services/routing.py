@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import time
 from dataclasses import dataclass
 from typing import Sequence
 
@@ -18,6 +19,7 @@ log = logging.getLogger(__name__)
 METERS_PER_MILE = 1609.344
 ORS_DIRECTIONS_URL = "https://api.openrouteservice.org/v2/directions/driving-hgv/geojson"
 OSRM_ROUTE_URL = "https://router.project-osrm.org/route/v1/driving/"
+RETRY_DELAY_S = 1.5  # pause before retrying a provider after a transient failure
 
 
 @dataclass
@@ -95,13 +97,19 @@ def get_route(points: Sequence[GeoPoint]) -> RouteResult:
     providers = ([("ors", _ors_route)] if settings.ORS_API_KEY else []) + [("osrm", _osrm_route)]
     last_error: TripPlanningError | None = None
     for name, provider in providers:
-        try:
-            return provider(points)
-        except TripPlanningError as exc:
-            log.warning("router %s failed: %s", name, exc)
-            last_error = exc
-        except (KeyError, IndexError, TypeError, ValueError) as exc:
-            log.warning("router %s returned unexpected data: %s", name, exc)
-            last_error = RouteNotFound("routing service returned an unexpected response")
+        for attempt in (1, 2):  # one retry, only for transient failures (the public servers blip)
+            try:
+                return provider(points)
+            except TripPlanningError as exc:
+                log.warning("router %s failed (attempt %d): %s", name, attempt, exc)
+                last_error = exc
+                if not exc.transient:
+                    break
+                if attempt == 1:
+                    time.sleep(RETRY_DELAY_S)
+            except (KeyError, IndexError, TypeError, ValueError) as exc:
+                log.warning("router %s returned unexpected data: %s", name, exc)
+                last_error = RouteNotFound("routing service returned an unexpected response")
+                break
     assert last_error is not None
     raise last_error

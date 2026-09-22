@@ -9,7 +9,7 @@ type ButtonVariant = 'primary' | 'secondary' | 'ghost'
 
 const BUTTON_STYLES: Record<ButtonVariant, string> = {
   primary:
-    'bg-ink text-white hover:bg-ink-soft active:bg-ink shadow-sm disabled:bg-ink/60 disabled:cursor-not-allowed',
+    'glow bg-primary text-on-primary font-semibold hover:bg-primary-hover shadow-sm disabled:opacity-60 disabled:cursor-not-allowed',
   secondary:
     'bg-surface text-ink border border-line-strong hover:border-ink/40 hover:bg-paper disabled:opacity-50',
   ghost: 'text-ink-soft hover:bg-ink/5 hover:text-ink disabled:opacity-50',
@@ -58,8 +58,8 @@ export function SectionHeading({ eyebrow, title, description, action }: {
 }) {
   return (
     <div className="flex flex-wrap items-end justify-between gap-3">
-      <div>
-        {eyebrow && <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">{eyebrow}</p>}
+      <div className="min-w-0">
+        {eyebrow && <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-accent-strong">{eyebrow}</p>}
         <h2 className="mt-0.5 text-lg font-semibold tracking-tight text-ink">{title}</h2>
         {description && <p className="mt-0.5 max-w-2xl text-[13px] text-muted">{description}</p>}
       </div>
@@ -80,6 +80,15 @@ export function ComplianceBadge({ ok, compact = false, title }: { ok: boolean; c
     >
       {ok ? <CheckCircle2 className="size-3.5" aria-hidden /> : <AlertTriangle className="size-3.5" aria-hidden />}
       {ok ? 'HOS compliant' : 'HOS violation'}
+    </span>
+  )
+}
+
+/** Milepost tag in the instrument (mono) face, e.g. "MI 452". */
+export function MileTag({ mile, className }: { mile: number; className?: string }) {
+  return (
+    <span className={cx('milepost inline-block', className)} title={`Mile ${Math.round(mile)}`}>
+      MI {Math.round(mile).toLocaleString('en-US')}
     </span>
   )
 }

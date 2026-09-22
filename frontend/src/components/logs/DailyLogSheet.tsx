@@ -235,8 +235,8 @@ function Grid() {
   )
 }
 
-/** The duty line: one continuous stroke — horizontal in the active row, vertical at every change (guide p.18). */
-function DutyLine({ log }: { log: DailyLog }) {
+/** The duty line: one continuous stroke, horizontal in the active row and vertical at every change (guide p.18). */
+function DutyLine({ log, animate }: { log: DailyLog; animate: boolean }) {
   let d = ''
   let prev: DutyStatus | null = null
   for (const seg of log.segments) {
@@ -256,22 +256,49 @@ function DutyLine({ log }: { log: DailyLog }) {
       strokeWidth={3.4}
       strokeLinejoin="round"
       strokeLinecap="round"
+      pathLength={animate ? 1 : undefined}
+      className={animate ? 'pen-draw' : undefined}
       data-testid="duty-line"
     />
   )
 }
 
-function Totals({ log }: { log: DailyLog }) {
+/** CSS class + delay for elements that appear after the duty line is drawn. */
+function writeIn(animate: boolean, delaySeconds: number) {
+  return animate ? { className: 'pen-write', style: { animationDelay: `${delaySeconds}s` } } : {}
+}
+
+function Totals({ log, animate }: { log: DailyLog; animate: boolean }) {
   return (
     <g>
-      {ROWS.map((row) => (
-        <Pen key={row.status} x={TOTAL_X} y={rowMid(row.status) + 8} size={23} anchor="middle">
-          {log.totals_hours[row.status].toFixed(2)}
-        </Pen>
+      {ROWS.map((row, i) => (
+        <g key={row.status} {...writeIn(animate, 1.9 + i * 0.14)}>
+          <Pen x={TOTAL_X} y={rowMid(row.status) + 8} size={23} anchor="middle">
+            {log.totals_hours[row.status].toFixed(2)}
+          </Pen>
+        </g>
       ))}
-      <Pen x={TOTAL_X} y={GRID_Y1 + 28} size={24} anchor="middle">
-        ={log.total_hours === 24 ? '24' : log.total_hours.toFixed(2)}
-      </Pen>
+      <g {...writeIn(animate, 2.55)}>
+        <Pen x={TOTAL_X} y={GRID_Y1 + 28} size={24} anchor="middle">
+          ={log.total_hours === 24 ? '24' : log.total_hours.toFixed(2)}
+        </Pen>
+      </g>
+    </g>
+  )
+}
+
+/** Playback cursor: a teal line through the grid at the scrubbed time, with a time tag. */
+function Cursor({ minute }: { minute: number }) {
+  const x = xAt(minute)
+  const h = Math.floor(minute / 60)
+  const label = `${((h + 11) % 12) + 1}:${String(minute % 60).padStart(2, '0')} ${h < 12 ? 'AM' : 'PM'}`
+  return (
+    <g pointerEvents="none" data-testid="log-cursor">
+      <line x1={x} x2={x} y1={BAND_Y - 4} y2={GRID_Y1 + 4} stroke="#3f7f82" strokeWidth={2} />
+      <rect x={x - 34} y={BAND_Y - 26} width={68} height={20} rx={10} fill="#3f7f82" />
+      <text x={x} y={BAND_Y - 12} textAnchor="middle" fontSize={11.5} fontWeight={700} fill="#fff" fontFamily={PRINT_FONT}>
+        {label}
+      </text>
     </g>
   )
 }
@@ -281,7 +308,7 @@ const LABEL_TOP = GRID_Y1 + 30
 const BRACKET_Y = GRID_Y1 + 18
 const LABEL_GAP = 50
 
-function Remarks({ log }: { log: DailyLog }) {
+function Remarks({ log, animate }: { log: DailyLog; animate: boolean }) {
   const stops = buildRemarkStops(log.segments)
   const anchors = spreadAnchors(
     stops.map((s) => xAt(s.startMin)),
@@ -294,12 +321,13 @@ function Remarks({ log }: { log: DailyLog }) {
       <T x={22} y={GRID_Y1 + 50} size={16} weight={700}>Remarks</T>
       <line x1={20} x2={20} y1={GRID_Y1 + 62} y2={900} stroke={INK} strokeWidth={4} />
       {stops.map((s, i) => {
+        const fade = writeIn(animate, 1.2 + (i / Math.max(1, stops.length)) * 0.8)
         const xs = xAt(s.startMin)
         const xe = xAt(s.endMin)
         const ax = anchors[i]
         const clock = minuteToClock(s.startMin)
         return (
-          <g key={i}>
+          <g key={i} {...fade}>
             {/* bracket under the grid spanning the stop */}
             <path
               d={xe - xs > 3 ? `M${xs} ${GRID_Y1 + 2}V${BRACKET_Y}H${xe}V${GRID_Y1 + 2}` : `M${xs} ${GRID_Y1 + 2}V${BRACKET_Y}`}
@@ -408,9 +436,13 @@ interface Props {
   /** Recap column C (last 5 days incl. today), computed by the caller from earlier sheets. */
   last5Hours: number
   className?: string
+  /** Draw the duty line like a pen and write the totals in (on-screen sheet only, never print/PDF). */
+  animate?: boolean
+  /** Minute of the day to mark with the playback cursor. */
+  cursorMinute?: number | null
 }
 
-export const DailyLogSheet = memo(function DailyLogSheet({ log, details, last5Hours, className }: Props) {
+export const DailyLogSheet = memo(function DailyLogSheet({ log, details, last5Hours, className, animate = false, cursorMinute = null }: Props) {
   return (
     <svg
       viewBox={`0 0 ${W} ${H}`}
@@ -423,11 +455,12 @@ export const DailyLogSheet = memo(function DailyLogSheet({ log, details, last5Ho
       <rect width={W} height={H} fill="#fff" />
       <Header log={log} details={details} />
       <Grid />
-      <DutyLine log={log} />
-      <Totals log={log} />
-      <Remarks log={log} />
+      <DutyLine log={log} animate={animate} />
+      <Totals log={log} animate={animate} />
+      <Remarks log={log} animate={animate} />
       <Shipping details={details} />
       <Recap log={log} last5Hours={last5Hours} />
+      {cursorMinute !== null && <Cursor minute={cursorMinute} />}
     </svg>
   )
 })

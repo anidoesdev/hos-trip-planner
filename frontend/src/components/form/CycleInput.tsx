@@ -13,7 +13,7 @@ export function CycleInput({ value, onChange, error, disabled }: Props) {
   const valid = value !== '' && Number.isFinite(n) && n >= 0 && n <= 70
   const used = valid ? n : 0
   const pct = (used / 70) * 100
-  const tone = used >= 60 ? 'var(--color-danger)' : used >= 45 ? 'var(--color-accent)' : 'var(--color-ink)'
+  const tone = used >= 60 ? 'var(--color-danger)' : used >= 45 ? 'var(--color-accent)' : 'var(--color-primary)'
 
   return (
     <div>
@@ -22,7 +22,7 @@ export function CycleInput({ value, onChange, error, disabled }: Props) {
           Hours already used <span className="font-normal text-muted">(70-hr cycle)</span>
         </label>
         <span className="tabular text-xs text-muted">
-          {valid ? `${(70 - n).toFixed(n % 1 ? 2 : 0)} h left` : '—'}
+          {valid ? `${(70 - n).toFixed(n % 1 ? 2 : 0)} h left` : 'Enter 0 to 70'}
         </span>
       </div>
       <div className="flex items-center gap-3">
@@ -35,7 +35,7 @@ export function CycleInput({ value, onChange, error, disabled }: Props) {
           disabled={disabled}
           aria-label="Current cycle used, hours (slider)"
           onChange={(e) => onChange(e.target.value)}
-          className="h-2 flex-1 cursor-pointer appearance-none rounded-full bg-line accent-ink"
+          className="h-2 flex-1 cursor-pointer appearance-none rounded-full bg-line accent-[var(--color-primary)]"
           style={{ background: `linear-gradient(to right, ${tone} ${pct}%, var(--color-line) ${pct}%)` }}
         />
         <div className="relative">
@@ -52,7 +52,7 @@ export function CycleInput({ value, onChange, error, disabled }: Props) {
             aria-describedby={error ? 'cycle-error' : undefined}
             onChange={(e) => onChange(e.target.value)}
             className={cx(
-              'tabular h-11 w-24 rounded-lg border bg-surface pl-3 pr-7 text-right text-[15px] font-medium',
+              'num h-11 w-24 rounded-lg border bg-surface pl-3 pr-7 text-right text-[15px] font-medium',
               'focus:outline-none focus:ring-2 focus:ring-accent/30',
               error ? 'border-danger' : 'border-line-strong focus:border-ink/50',
             )}
