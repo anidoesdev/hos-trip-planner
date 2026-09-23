@@ -35,7 +35,7 @@ export const STOP_META: Record<StopType, StopMeta> = {
 
 /**
  * Badge colors, used in inline styles (HTML, where CSS variables work, including Leaflet
- * divIcons). Start follows the theme: dark ink by day, a light badge at night.
+ * divIcons). Start is drawn in dark ink.
  */
 export const STOP_HEX: Record<StopType, string> = {
   start: 'var(--color-stop-start)',
@@ -48,7 +48,7 @@ export const STOP_HEX: Record<StopType, string> = {
   inspection: '#64748b',
 }
 
-/** Icon color on each badge: white, except Start at night (light badge, dark icon). */
+/** Icon color drawn on each badge. */
 export const STOP_ON: Record<StopType, string> = {
   start: 'var(--color-on-stop-start)',
   pickup: '#fff',

@@ -7,10 +7,8 @@
 @import "leaflet/dist/leaflet.css";
 
 /*
- * Two themes share one set of semantic tokens:
- *   light  = "Day" (colorhunt A0937D E7D4B5 F6E6CB B6C7AA): ivory page, beige lines, deep sage actions, taupe details
- *   dark   = "Night Haul" (colorhunt 222831 31363F 76ABAE EEEEEE): charcoal and slate panels, teal instruments
- * The log sheets are always white paper, drawn in the pen color, in both themes.
+ * Semantic tokens, "Day" palette (colorhunt A0937D E7D4B5 F6E6CB B6C7AA): ivory page, beige lines,
+ * deep sage actions, taupe details. The log sheets are white paper, drawn in the pen color.
  */
 @theme {
   --font-sans: "Inter Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -46,10 +44,10 @@
   --color-gauge-limit: #a33b2b;
 
   /* duty statuses in the playback strip */
-  --color-status-d: #6f624c;
-  --color-status-on: #b6c7aa;
-  --color-status-sb: #a0937d;
-  --color-status-off: #e7d4b5;
+  --color-status-d: #2f6f8f;
+  --color-status-on: #d08c2e;
+  --color-status-sb: #7a5c99;
+  --color-status-off: #9bb58a;
 
   /* playback: the truck on the map and the playhead on the strip, kept apart from the route color */
   --color-truck: #8aa37a;
@@ -64,7 +62,7 @@
   --color-stop-reset: #4f46e5;
   --color-stop-restart: #7c3aed;
   --color-stop-inspection: #64748b;
-  /* icon color drawn on a stop badge (only Start flips at night) */
+  /* icon color drawn on the Start badge */
   --color-on-stop-start: #ffffff;
 
   --shadow-card: 0 1px 2px rgb(47 42 34 / 0.05), 0 4px 16px -4px rgb(47 42 34 / 0.12);
@@ -73,49 +71,6 @@
 
 :root {
   color-scheme: light;
-}
-
-/* ---- Night Haul ------------------------------------------------------------------------ */
-:root[data-theme="dark"] {
-  color-scheme: dark;
-  --color-paper: #222831;
-  --color-surface: #31363f;
-  --color-ink: #eeeeee;
-  --color-ink-soft: #cfd3d8;
-  --color-muted: #a7aeb8;
-  --color-line: #3a404a;
-  --color-line-strong: #4a515c;
-  --color-accent: #76abae;
-  --color-accent-strong: #9cc9cb;
-  --color-accent-soft: #2a3a3f;
-  --color-pen: #9cc9cb;
-  --color-ok: #7fcba8;
-  --color-ok-soft: #25403a;
-  --color-danger: #ef8a80;
-  --color-danger-soft: #45292a;
-
-  --color-primary: #76abae;
-  --color-primary-hover: #8bbcbf;
-  --color-on-primary: #222831;
-  --color-desk: #1b2027;
-
-  --color-gauge: #76abae;
-  --color-gauge-warn: #e8b86b;
-  --color-gauge-limit: #ef8a80;
-
-  --color-status-d: #76abae;
-  --color-status-on: #d9c08c;
-  --color-status-sb: #a7aeb8;
-  --color-status-off: #3a404a;
-
-  --color-truck: #d9c08c;
-  --color-playhead: #eeeeee;
-
-  --color-stop-start: #eeeeee;
-  --color-on-stop-start: #222831;
-
-  --shadow-card: 0 1px 0 rgb(255 255 255 / 0.03) inset, 0 10px 28px -10px rgb(0 0 0 / 0.65);
-  --shadow-sheet: 0 0 0 1px rgb(255 255 255 / 0.06), 0 28px 60px -14px rgb(0 0 0 / 0.85);
 }
 
 @layer base {
@@ -130,14 +85,6 @@
   body {
     @apply bg-paper text-ink font-sans antialiased;
     font-feature-settings: "cv11", "ss01";
-  }
-  /* dashboard backlight: a faint teal glow from the top of the screen */
-  :root[data-theme="dark"] body {
-    background:
-      radial-gradient(1100px 520px at 18% -8%, rgb(118 171 174 / 0.1), transparent 70%),
-      radial-gradient(900px 480px at 100% 0%, rgb(217 192 140 / 0.05), transparent 70%),
-      var(--color-paper);
-    background-attachment: fixed;
   }
   :focus-visible {
     @apply outline-2 outline-offset-2 outline-accent;
@@ -188,37 +135,6 @@
   background: transparent;
   border: 0;
 }
-/* Night map: inverted slate tiles, like a navigation screen after dark */
-:root[data-theme="dark"] .leaflet-container {
-  background: #222831;
-}
-:root[data-theme="dark"] .leaflet-tile-pane {
-  filter: invert(1) hue-rotate(180deg) brightness(0.85) contrast(0.88) saturate(0.15);
-}
-:root[data-theme="dark"] .leaflet-popup-content-wrapper,
-:root[data-theme="dark"] .leaflet-popup-tip {
-  background: var(--color-surface);
-  color: var(--color-ink);
-  box-shadow: 0 0 0 1px var(--color-line-strong), 0 12px 30px -8px rgb(0 0 0 / 0.7);
-}
-:root[data-theme="dark"] .leaflet-bar {
-  border-color: var(--color-line-strong);
-}
-:root[data-theme="dark"] .leaflet-bar a {
-  background: var(--color-surface);
-  color: var(--color-ink);
-  border-bottom-color: var(--color-line);
-}
-:root[data-theme="dark"] .leaflet-control-attribution {
-  background: rgb(49 54 63 / 0.85);
-  color: var(--color-muted);
-}
-:root[data-theme="dark"] .leaflet-control-attribution a {
-  color: var(--color-accent);
-}
-:root[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button {
-  color: var(--color-muted);
-}
 
 /* ---- Trip playback --------------------------------------------------------------------- */
 .scrubber {
@@ -257,17 +173,6 @@
 }
 .scrubber:focus-visible::-webkit-slider-thumb {
   box-shadow: 0 0 0 2px var(--color-surface), 0 0 0 4px var(--color-playhead);
-}
-/* Instrument glow on the gauges, playhead and primary controls at night */
-:root[data-theme="dark"] .gauge-arc {
-  filter: drop-shadow(0 0 3px currentColor) drop-shadow(0 0 9px color-mix(in srgb, currentColor 45%, transparent));
-}
-:root[data-theme="dark"] .scrubber::-webkit-slider-thumb {
-  box-shadow: 0 0 0 2px var(--color-surface), 0 0 12px 2px color-mix(in srgb, var(--color-playhead) 60%, transparent);
-}
-:root[data-theme="dark"] .glow {
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-primary) 35%, transparent),
-    0 0 18px -2px color-mix(in srgb, var(--color-primary) 55%, transparent);
 }
 
 /* ---- Motion ---------------------------------------------------------------------------- */
@@ -396,8 +301,7 @@
     size: letter portrait;
     margin: 0.35in;
   }
-  body,
-  :root[data-theme="dark"] body {
+  body {
     background: #fff;
   }
   .print-sheet {

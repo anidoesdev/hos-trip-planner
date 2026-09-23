@@ -9,9 +9,7 @@ import { Itinerary } from './components/results/Itinerary'
 import { ErrorState, PlanningProgress } from './components/results/States'
 import { SummaryPanel } from './components/results/SummaryPanel'
 import { Card, SectionHeading, cx } from './components/ui/primitives'
-import { Moon, Sun } from 'lucide-react'
 import { useLocalStorage } from './hooks/useLocalStorage'
-import { useTheme, type Theme } from './hooks/useTheme'
 import { useView } from './hooks/useView'
 import { Landing } from './components/landing/Landing'
 import { ArrowLeft } from 'lucide-react'
@@ -35,7 +33,7 @@ const SAMPLE_DETAILS: CarrierDetails = {
   shipper: 'Sample Shipper (general freight)',
 }
 
-function Header({ status, theme, onToggleTheme, onHome }: { status: ServerStatus; theme: Theme; onToggleTheme: () => void; onHome: () => void }) {
+function Header({ status, onHome }: { status: ServerStatus; onHome: () => void }) {
   const dot = { checking: 'bg-slate-400', online: 'bg-emerald-500', waking: 'bg-amber-500 animate-pulse', offline: 'bg-red-500' }[status]
   const text = { checking: 'Connecting…', online: 'Planner online', waking: 'Waking server…', offline: 'Server offline' }[status]
   return (
@@ -60,16 +58,6 @@ function Header({ status, theme, onToggleTheme, onHome }: { status: ServerStatus
             <span className={cx('size-2 rounded-full', dot)} aria-hidden />
             <span className="hidden sm:inline">{text}</span>
           </span>
-          <button
-            type="button"
-            onClick={onToggleTheme}
-            aria-label={theme === 'dark' ? 'Switch to day theme' : 'Switch to Night Haul theme'}
-            title={theme === 'dark' ? 'Day theme' : 'Night Haul theme'}
-            className="flex h-8 items-center gap-1.5 rounded-lg border border-line-strong px-2.5 text-xs font-medium text-ink-soft transition-colors hover:border-accent hover:text-ink"
-          >
-            {theme === 'dark' ? <Sun className="size-3.5" aria-hidden /> : <Moon className="size-3.5" aria-hidden />}
-            <span className="hidden sm:inline">{theme === 'dark' ? 'Day' : 'Night'}</span>
-          </button>
         </div>
       </div>
     </header>
@@ -108,7 +96,6 @@ export default function App() {
   const [lastRequest, setLastRequest] = useState<TripRequest | null>(null)
   const [selectedStopId, setSelectedStopId] = useState<string | null>(null)
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null)
-  const [theme, toggleTheme] = useTheme()
   const [view, setView] = useView()
   const [presetRequest, setPresetRequest] = useState<{ id: string; nonce: number } | null>(null)
   const [details, setDetails] = useLocalStorage<CarrierDetails>('hos.carrierDetails', SAMPLE_DETAILS)
@@ -198,7 +185,7 @@ export default function App() {
 
   return (
     <div className="min-h-dvh">
-      <Header status={status} theme={theme} onToggleTheme={toggleTheme} onHome={() => setView('landing')} />
+      <Header status={status} onHome={() => setView('landing')} />
       <main
         className={cx(
           'mx-auto max-w-[1440px] px-4 py-6 sm:px-6 lg:py-8 print:hidden',
@@ -271,7 +258,6 @@ export default function App() {
                         groups={groups}
                         selectedGroupId={selectedGroupId}
                         truckAt={truckAt}
-                        theme={theme}
                         onSelectGroup={(id) => {
                           setSelectedGroupId(id)
                           setSelectedStopId(null)

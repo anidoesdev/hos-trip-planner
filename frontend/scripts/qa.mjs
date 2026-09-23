@@ -214,15 +214,6 @@ for (const width of [768, 375]) {
   if (!fieldErr) fail('location_not_found not attached to pickup field')
   await page.screenshot({ path: shot('error-state.png') })
 
-  // theme toggle flips the theme and survives a reload
-  const before = await page.evaluate(() => document.documentElement.dataset.theme)
-  await page.getByRole('button', { name: /Switch to (day|Night Haul) theme/ }).click()
-  const after = await page.evaluate(() => document.documentElement.dataset.theme)
-  if (before === after) fail(`theme toggle did nothing (${before})`)
-  await page.reload({ waitUntil: 'networkidle' })
-  const persisted = await page.evaluate(() => document.documentElement.dataset.theme)
-  if (persisted !== after) fail(`theme not persisted (${after} → ${persisted})`)
-  console.log(`  theme: ${before} → ${after}, persisted after reload`)
   await ctx.close()
 }
 

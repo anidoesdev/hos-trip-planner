@@ -8,17 +8,13 @@ import { MileTag } from '../ui/primitives'
 import { fmtDayTime, fmtDuration, fmtMiles } from '../../lib/format'
 import { LEGEND_ORDER, STOP_HEX, STOP_META, STOP_ON, type StopGroup, type StopType } from '../../lib/stops'
 import { Truck } from 'lucide-react'
-import type { Theme } from '../../hooks/useTheme'
 
 /**
  * Leaflet writes path colors as SVG attributes, which cannot read CSS variables, so the
- * route palette is chosen per theme here: dark taupe by day, teal at night. The truck and
- * the playhead use the accent color so they stand out on the route.
+ * route palette is set here in hex. The truck and the playhead use the accent color so
+ * they stand out on the route.
  */
-const ROUTE_COLORS: Record<Theme, { loaded: string; deadhead: string; casing: string; flow: string }> = {
-  light: { loaded: '#6f624c', deadhead: '#a0937d', casing: '#fff9ee', flow: '#fff9ee' },
-  dark: { loaded: '#76abae', deadhead: '#a7aeb8', casing: '#222831', flow: '#222831' },
-}
+const ROUTE_COLORS = { loaded: '#6f624c', deadhead: '#a0937d', casing: '#fff9ee', flow: '#fff9ee' }
 
 interface Props {
   plan: TripPlan
@@ -27,7 +23,6 @@ interface Props {
   onSelectGroup: (id: string) => void
   /** Where the playback puts the truck right now. */
   truckAt?: [number, number] | null
-  theme?: Theme
 }
 
 const truckIcon = L.divIcon({
@@ -117,7 +112,7 @@ function GroupPopup({ group }: { group: StopGroup }) {
   )
 }
 
-function Legend({ theme }: { theme: Theme }) {
+function Legend() {
   return (
     <ul className="flex flex-wrap gap-x-3 gap-y-1">
       {LEGEND_ORDER.map((t) => (
@@ -130,7 +125,7 @@ function Legend({ theme }: { theme: Theme }) {
         <span className="w-4 border-t-2 border-dashed border-slate-600" aria-hidden /> To pickup
       </li>
       <li className="flex items-center gap-1.5 text-[11px] font-medium text-ink-soft">
-        <span className="w-4 border-t-[3px]" style={{ borderColor: ROUTE_COLORS[theme].loaded }} aria-hidden /> Loaded
+        <span className="w-4 border-t-[3px]" style={{ borderColor: ROUTE_COLORS.loaded }} aria-hidden /> Loaded
       </li>
       <li className="flex items-center gap-1.5 text-[11px] font-medium text-ink-soft">
         <span className="size-2.5 rounded-[3px] bg-[var(--color-truck)] ring-2 ring-surface" aria-hidden /> Truck
@@ -139,8 +134,8 @@ function Legend({ theme }: { theme: Theme }) {
   )
 }
 
-export default function RouteMap({ plan, groups, selectedGroupId, onSelectGroup, truckAt = null, theme = 'light' }: Props) {
-  const colors = ROUTE_COLORS[theme]
+export default function RouteMap({ plan, groups, selectedGroupId, onSelectGroup, truckAt = null }: Props) {
+  const colors = ROUTE_COLORS
   const markers = useRef(new Map<string, L.Marker>())
   const bounds = useMemo(
     () => L.latLngBounds(plan.route.geometry.map(([a, b]) => [a, b] as [number, number])),
@@ -168,11 +163,11 @@ export default function RouteMap({ plan, groups, selectedGroupId, onSelectGroup,
           <FitToRoute bounds={bounds} />
           <FlyToSelected groups={groups} selectedGroupId={selectedGroupId} markers={markers} />
           {legs.map((leg, i) => (
-            <Polyline key={`halo-${theme}-${i}`} positions={leg.geometry} pathOptions={{ color: colors.casing, weight: 8, opacity: 0.9 }} />
+            <Polyline key={`halo-${i}`} positions={leg.geometry} pathOptions={{ color: colors.casing, weight: 8, opacity: 0.9 }} />
           ))}
           {legs.map((leg, i) => (
             <Polyline
-              key={`leg-${theme}-${i}`}
+              key={`leg-${i}`}
               positions={leg.geometry}
               pathOptions={{
                 color: i === 0 ? colors.deadhead : colors.loaded,
@@ -196,7 +191,7 @@ export default function RouteMap({ plan, groups, selectedGroupId, onSelectGroup,
           <Polyline
             positions={legs[legs.length - 1].geometry}
             interactive={false}
-            key={`flow-${theme}`}
+            key={'flow'}
             pathOptions={{ color: colors.flow, weight: 2, opacity: 0.85, dashArray: '2 16', lineCap: 'round', className: 'route-flow' }}
           />
         )}
@@ -224,11 +219,11 @@ export default function RouteMap({ plan, groups, selectedGroupId, onSelectGroup,
         </MapContainer>
         {/* Overlay legend from sm up; on phones it sits under the map so it doesn't hide the route. */}
         <div className="pointer-events-none absolute bottom-2 left-2 z-[500] hidden max-w-[calc(100%-1rem)] rounded-lg bg-surface/95 px-3 py-2 shadow-card backdrop-blur-sm sm:block">
-          <Legend theme={theme} />
+          <Legend />
         </div>
       </div>
       <div className="px-1 sm:hidden">
-        <Legend theme={theme} />
+        <Legend />
       </div>
     </div>
   )
