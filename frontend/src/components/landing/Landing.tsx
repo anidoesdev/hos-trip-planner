@@ -28,8 +28,8 @@ const LOG_D = 'M0 6H60V30H64V22H132V6H138V22H174V14H240'
 
 function MiniGauge({ label, value, p, color }: { label: string; value: string; p: number; color: string }) {
   return (
-    <div className="flex items-center gap-2">
-      <svg viewBox="0 0 36 36" className="size-9 -rotate-90 overflow-visible" aria-hidden>
+    <div className="flex min-w-0 flex-col items-center gap-1 text-center min-[400px]:flex-row min-[400px]:gap-2 min-[400px]:text-left">
+      <svg viewBox="0 0 36 36" className="size-9 shrink-0 -rotate-90 overflow-visible" aria-hidden>
         <circle cx="18" cy="18" r="14" fill="none" stroke="var(--color-line)" strokeWidth="4" />
         <circle
           cx="18"
@@ -44,7 +44,7 @@ function MiniGauge({ label, value, p, color }: { label: string; value: string; p
           style={{ color, '--p': p } as CSSProperties}
         />
       </svg>
-      <div className="leading-tight">
+      <div className="min-w-0 leading-tight">
         <p className="text-[9px] font-semibold uppercase tracking-wide text-muted">{label}</p>
         <p className="num text-[11px] font-bold text-ink">{value}</p>
       </div>

@@ -216,7 +216,7 @@ export default function App() {
                 <button
                   type="button"
                   onClick={() => setView('landing')}
-                  className="flex items-center gap-1.5 text-[13px] font-medium text-muted transition-colors hover:text-ink"
+                  className="-ml-2 flex min-h-11 items-center gap-1.5 rounded-lg px-2 text-[13px] font-medium text-muted transition-colors hover:text-ink"
                 >
                   <ArrowLeft className="size-4" aria-hidden /> Back to overview
                 </button>

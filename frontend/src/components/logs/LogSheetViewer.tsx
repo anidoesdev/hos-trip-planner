@@ -150,7 +150,10 @@ export function LogSheetViewer({ plan, details, onDetailsChange, cursor = null }
           />
         </div>
 
-        <div id="log-sheet-panel" role="tabpanel" className="overflow-x-auto bg-desk p-3 sm:p-6">
+        <p className="bg-desk px-3 pt-2.5 text-center text-[11px] text-muted sm:hidden">
+          Swipe sideways to see the whole sheet
+        </p>
+        <div id="log-sheet-panel" role="tabpanel" tabIndex={0} className="overflow-x-auto bg-desk p-3 focus-visible:outline-2 focus-visible:outline-accent sm:p-6">
           <div className="mx-auto min-w-[640px] max-w-[980px] shadow-sheet">
             <DailyLogSheet
               key={day.date}
