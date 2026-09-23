@@ -13,13 +13,14 @@ The schedule follows FMCSA Hours of Service for a property-carrying driver (49 C
 **✓ HOS compliant**.
 
 **Live app:** `https://<your-app>.vercel.app` · **API:** `https://<your-api>.onrender.com/api/health`
-<sub>(Fill these in after following [docs/DEPLOY.md](docs/DEPLOY.md).)</sub>
 
-![Landing dashboard: what the planner does, with an animated preview](docs/screenshots/landing.png)
+![Landing dashboard: what the planner does, with an animated preview](screenshots/landing.png)
+
+<sub>Screenshots show the Day (light) theme.</sub>
 
 | Desktop | Daily log sheet | Mobile |
 |---|---|---|
-| ![Desktop results](docs/screenshots/app-desktop.png) | ![Daily log sheet](docs/screenshots/log-sheet.png) | ![Mobile](docs/screenshots/mobile-results.png) |
+| ![Desktop results](screenshots/app-desktop.png) | ![Daily log sheet](screenshots/log-sheet.png) | ![Mobile](screenshots/mobile-results.png) |
 
 ## Highlights
 
@@ -50,11 +51,7 @@ The schedule follows FMCSA Hours of Service for a property-carrying driver (49 C
   dash flows along the loaded leg to show the direction of travel.
 - All animations switch off for users who prefer reduced motion.
 
-![Trip playback: clocks at their limits during a 10-hr rest](docs/screenshots/playback.png)
-
-| Night Haul (default) | Day |
-|---|---|
-| ![Night Haul theme](docs/screenshots/app-desktop.png) | ![Day theme](docs/screenshots/app-desktop-day.png) |
+![Trip playback: clocks at their limits during a 10-hr rest](screenshots/playback.png)
 
 ## Try it
 
@@ -97,10 +94,10 @@ flowchart LR
 ```
 
 ```
-backend/    Django API: hos/ engine (pure Python), trips/ HTTP + geo services, tests/
-frontend/   Vite + React + TS + Tailwind: form, map, itinerary, SVG log sheets, PDF export
-docs/       screenshots, deploy guide, Loom script
-render.yaml Render blueprint for the API
+backend/     Django API: hos/ engine (pure Python), trips/ HTTP + geo services, tests/
+frontend/    Vite + React + TS + Tailwind: form, map, itinerary, SVG log sheets, PDF export
+screenshots/ README images, Day theme (regenerate with frontend/scripts/readme-shots.mjs)
+render.yaml  Render blueprint for the API
 ```
 
 ## How the HOS engine works
@@ -224,5 +221,3 @@ The backend tests check that every plan:
 
 They run across distances from 30 to 3,300 mi, cycle values from 0 to 70 h, and four different
 start times.
-
-Deploying: see **[docs/DEPLOY.md](docs/DEPLOY.md)**. Demo script: **[docs/LOOM_SCRIPT.md](docs/LOOM_SCRIPT.md)**.

@@ -1,10 +1,10 @@
 // End-to-end QA: runs every preset in real Chrome, checks data consistency and layout,
-// and saves screenshots to ../docs/screenshots. Usage: node scripts/qa.mjs [baseUrl]
+// and saves screenshots to ../screenshots/qa. Usage: node scripts/qa.mjs [baseUrl]
 import { chromium } from 'playwright'
 import { mkdirSync, statSync } from 'node:fs'
 
 const BASE = process.argv[2] ?? 'http://localhost:5173'
-const OUT = new URL('../../docs/screenshots/qa/', import.meta.url)
+const OUT = new URL('../../screenshots/qa/', import.meta.url)
 mkdirSync(OUT, { recursive: true })
 const shot = (name) => new URL(name, OUT).pathname.replace(/^\/([A-Za-z]:)/, '$1')
 
