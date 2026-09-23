@@ -77,6 +77,14 @@
   html {
     -webkit-text-size-adjust: 100%;
   }
+  /* hide scrollbars everywhere; wheel, touch and keyboard scrolling still work */
+  * {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  *::-webkit-scrollbar {
+    display: none;
+  }
   @media (prefers-reduced-motion: no-preference) {
     html {
       scroll-behavior: smooth;
